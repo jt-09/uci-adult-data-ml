@@ -1,0 +1,23 @@
+# Report Outline (RQ-001)
+
+1. Introduction
+2. Research Focus
+3. Dataset and Task Validity
+4. Exploratory Data Analysis and Feature Selection
+5. Target Balance and Sensitive Attribute Audit
+6. Modelling Approach
+7. Logistic Regression
+8. Decision Tree
+9. Random Forest
+10. Gradient Boosting
+11. MLP Classifier
+12. Cross-Model Comparison
+13. Final Model Evaluation
+14. Interpretability and Error Analysis
+15. Fairness and Subgroup Diagnostics
+16. Calibration Analysis
+17. Extension: Removing Sensitive Attributes / Proxy Analysis
+18. Reflection on Learning
+19. Conclusion
+20. References
+A. Appendix

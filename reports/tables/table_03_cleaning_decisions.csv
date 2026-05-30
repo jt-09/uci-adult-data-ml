@@ -1,0 +1,4 @@
+step,token,description,removed,mapping,column
+missing_token,?,Replaced '?' with NA,,,
+drop_duplicates,,,29.0,,
+target_encoding,,,,"{'<=50K': 0, '>50K': 1}",income

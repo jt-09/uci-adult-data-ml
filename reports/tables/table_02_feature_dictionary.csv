@@ -1,0 +1,15 @@
+feature,type,sensitive
+age,numeric,False
+fnlwgt,numeric,False
+education-num,numeric,False
+capital-gain,numeric,False
+capital-loss,numeric,False
+hours-per-week,numeric,False
+workclass,categorical,False
+education,categorical,False
+marital-status,categorical,False
+occupation,categorical,False
+relationship,categorical,False
+race,categorical,True
+sex,categorical,True
+native-country,categorical,False
