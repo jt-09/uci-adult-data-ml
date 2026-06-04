@@ -1,0 +1,13 @@
+---
+description: Prevent train/test leakage in ML pipeline code
+globs: src/**/*.py,scripts/**/*.py
+alwaysApply: false
+---
+
+# No Data Leakage
+
+- Split train/test BEFORE fitting preprocessors.
+- Fit `ColumnTransformer` and models only on training data (inside sklearn `Pipeline` or explicit train slice).
+- Hyperparameter tuning: 5-fold CV on train split only; never use test labels for selection.
+- Main selection metric: macro F1.
+- Sensitive attributes (`sex`, `race`) may be dropped only for EXT-001 extension experiments.

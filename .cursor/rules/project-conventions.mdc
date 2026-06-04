@@ -1,0 +1,12 @@
+---
+description: Adult Income ML project layout, configs, and requirement ID tagging
+alwaysApply: true
+---
+
+# Project Conventions
+
+- Package: `src/adult_income_ml/` — import as `adult_income_ml`.
+- Config: `configs/project_config.yaml` is single source of truth for paths, seed, columns.
+- Scripts: numbered `scripts/00_` … `scripts/11_` — run in order for full pipeline.
+- Tag outputs with requirement IDs (DATA-*, EDA-*, MODEL-*, etc.) via `tag_artifact()` or `.meta.json` sidecars.
+- Results go to `results/` (gitignored); report copies go to `reports/figures/` and `reports/tables/`.

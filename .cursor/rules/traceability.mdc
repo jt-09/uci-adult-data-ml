@@ -1,0 +1,12 @@
+---
+description: Figure/table numbering and traceability matrix updates
+globs: reports/**,scripts/11_*.py
+alwaysApply: false
+---
+
+# Traceability
+
+- Figures: `fig_01_` … `fig_18_` in `reports/figures/`.
+- Tables: `table_01_` … in `reports/tables/`.
+- Update `reports/traceability_matrix.md` evidence column when artifacts are created.
+- `scripts/11_build_report_assets.py` validates all requirement IDs have linked files.
