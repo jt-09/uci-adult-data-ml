@@ -11,16 +11,6 @@ build/
 .pytest_cache/
 .ipynb_checkpoints/
 
-# Data (keep structure)
-data/raw/*
-!data/raw/.gitkeep
-data/interim/*
-!data/interim/.gitkeep
-data/processed/*
-!data/processed/.gitkeep
-data/external/*
-!data/external/.gitkeep
-
 # Generated results
 results/**/*
 !results/**/.gitkeep
@@ -28,6 +18,16 @@ results/**/*
 # Environment
 .env
 *.log
+
+# LaTeX build artifacts (keep main.tex and committed PDF)
+reports/overleaf/*.aux
+reports/overleaf/*.bbl
+reports/overleaf/*.blg
+reports/overleaf/*.out
+reports/overleaf/*.toc
+
+# Local data artifacts (CSV and sidecars)
+data/
 
 # OS / IDE
 .DS_Store
