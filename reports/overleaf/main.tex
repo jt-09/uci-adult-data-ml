@@ -174,4 +174,238 @@ Figures 3a–3b. Proportion earning > \$50K by sex and race (EDA-003).
 
 Imbalance and group rate differences foreshadow the need for macro-averaged metrics and subgroup diagnostics in later sections.
 
+
+\section{Modelling Approach}
+
+\subsection{Train/test split}
+
+A \textbf{stratified 80/20} split produced \textbf{39,050} training and \textbf{9,763} test records (SPLIT-001). Positive rates are aligned: \textbf{23.9\%} in train and \textbf{23.9\%} in test (Table 4).
+
+\begin{table}[H]
+  \centering
+  \small
+  \begin{tabular}{lll}
+    \toprule
+    Split & n & Positive rate \\
+    \midrule
+    Train & 39,050 & 0.239 \\
+    Test & 9,763 & 0.239 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Preprocessing and leakage control}
+
+Preprocessing is implemented in \texttt{src/adult\_income\_ml/pipelines.py} (FEAT-001):
+
+\begin{enumerate}
+  \item Numeric: median imputation + standardisation
+  \item Categorical: mode imputation + one-hot encoding (\texttt{handle\_unknown="ignore"})
+\end{enumerate}
+
+The preprocessor is \textbf{fitted only on training folds} inside each CV split or on the full training set for the final fit. The test set is never used for imputation statistics, scaling, or hyperparameter selection.
+
+\subsection{Tuning protocol}
+
+\begin{itemize}
+  \item \textbf{Search:} \texttt{RandomizedSearchCV} (up to 20 iterations per model)
+  \item \textbf{CV:} 5 folds on training data
+  \item \textbf{Primary scoring:} macro F1
+  \item \textbf{Candidates:} dummy baseline, logistic regression, decision tree, random forest, HistGradientBoosting, XGBoost, LightGBM, sklearn MLP, PyTorch embedding MLP
+\end{itemize}
+
+Per-model learning curves (repo plan Figures 7–10) were not exported; CV scores and best hyperparameters are reported in Sections 7–12 and the Appendix.
+
+
+\section{Logistic Regression}
+
+Logistic regression provides an interpretable linear baseline (MODEL-001). After tuning on the training split:
+
+\begin{table}[H]
+  \centering
+  \small
+  \begin{tabular}{ll}
+    \toprule
+    Metric & Value \\
+    \midrule
+    \textbf{CV macro F1 (train only)} & \textbf{0.780} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Best hyperparameters: \texttt{C=1.0}, \texttt{class\_weight=None}, \texttt{max\_iter=1000}. The model achieves moderate discrimination but underperforms nonlinear ensembles (Section 12).
+
+
+\section{Decision Tree}
+
+A single decision tree offers transparent decision rules (MODEL-002).
+
+\begin{table}[H]
+  \centering
+  \small
+  \begin{tabular}{ll}
+    \toprule
+    Metric & Value \\
+    \midrule
+    \textbf{CV macro F1 (train only)} & \textbf{0.787} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Best settings: \texttt{max\_depth=10}, \texttt{min\_samples\_leaf=10}. Performance improves slightly over logistic regression but remains below ensemble methods.
+
+
+\section{Random Forest}
+
+Random forest introduces bagged nonlinear splits (MODEL-003).
+
+\begin{table}[H]
+  \centering
+  \small
+  \begin{tabular}{ll}
+    \toprule
+    Metric & Value \\
+    \midrule
+    \textbf{CV macro F1 (train only)} & \textbf{0.793} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Best settings: \texttt{n\_estimators=200}, \texttt{max\_depth=None}, \texttt{min\_samples\_leaf=5}. This is a strong classical baseline but is surpassed by gradient boosting variants.
+
+
+\section{Gradient Boosting}
+
+Three boosting implementations were tuned (MODEL-004):
+
+\begin{table}[H]
+  \centering
+  \small
+  \begin{tabular}{ll}
+    \toprule
+    Model & CV macro F1 (train only) \\
+    \midrule
+    HistGradientBoosting & 0.814 \\
+    XGBoost & 0.814 \\
+    \textbf{LightGBM} & \textbf{0.815} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{LightGBM} achieved the highest cross-validated macro F1 and was selected as the final model (\texttt{results/metrics/best\_model.json}). Best LightGBM parameters: \texttt{n\_estimators=200}, \texttt{max\_depth=5}, \texttt{learning\_rate=0.1}, \texttt{num\_leaves=31}.
+
+HistGradientBoosting and XGBoost were effectively tied; boosting families clearly outperform linear and single-tree models on this tabular task.
+
+
+\section{MLP Classifier}
+
+Two neural approaches were evaluated on the \textbf{held-out test set} after separate training (MODEL-005)—reported here for comparison; neither was selected as the final model.
+
+\begin{table}[H]
+  \centering
+  \small
+  \begin{tabular}{lll}
+    \toprule
+    Model & Test macro F1 & Test ROC-AUC \\
+    \midrule
+    sklearn MLP (one-hot pipeline) & 0.791 & 0.914 \\
+    PyTorch embedding MLP & 0.559 & 0.588 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The sklearn MLP is competitive with classical models but below the selected LightGBM on test macro F1 (0.818; Section 13). The embedding MLP underperformed substantially—likely due to limited tuning, class imbalance, and tabular structure favouring tree ensembles.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/fig_09_mlp_training_curve.png}
+  \caption{Figure 9: MLP training curve}
+\end{figure}
+
+Figure 9. PyTorch embedding MLP training loss by epoch (MODEL-005).
+
+
+\section{Cross-Model Comparison}
+
+Figure 10 summarises \textbf{CV macro F1 on the training split} for all tuned classical models. LightGBM leads at \textbf{0.815}, followed by XGBoost and HistGradientBoosting (\textasciitilde{}0.814).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/fig_10_cross_model_comparison.png}
+  \caption{Figure 10: Cross-model comparison}
+\end{figure}
+
+Figure 10. Cross-validated macro F1 by model family (EVAL-001). Selection is based on this metric only—not test performance.
+
+\begin{table}[H]
+  \centering
+  \small
+  \begin{tabular}{ll}
+    \toprule
+    Model & CV macro F1 \\
+    \midrule
+    logistic\_regression & 0.780 \\
+    decision\_tree & 0.787 \\
+    random\_forest & 0.793 \\
+    hist\_gradient\_boosting & 0.814 \\
+    xgboost & 0.814 \\
+    \textbf{lightgbm} & \textbf{0.815} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+
+\section{Final Model Evaluation}
+
+The selected \textbf{LightGBM} pipeline was evaluated \textbf{once} on the held-out test set (EVAL-001).
+
+\subsection{Test-set metrics}
+
+\begin{table}[H]
+  \centering
+  \small
+  \begin{tabular}{ll}
+    \toprule
+    Metric & Test value \\
+    \midrule
+    Accuracy & 0.874 \\
+    Balanced accuracy & 0.802 \\
+    Precision (macro) & 0.839 \\
+    Recall (macro) & 0.802 \\
+    \textbf{F1 (macro)} & \textbf{0.818} \\
+    F1 (weighted) & 0.871 \\
+    ROC-AUC & 0.930 \\
+    PR-AUC & 0.836 \\
+    Brier score & 0.087 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Test macro F1 (\textbf{0.818}) is close to CV macro F1 (\textbf{0.815}), suggesting reasonable generalisation without severe overfitting on this split.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/fig_11_confusion_matrix.png}
+  \caption{Figure 11: Confusion matrix}
+\end{figure}
+
+Figure 11. Confusion matrix on the test set (EVAL-001).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/fig_12_roc.png}
+  \caption{Figure 12a: ROC curve}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/fig_12_pr.png}
+  \caption{Figure 12b: Precision–recall curve}
+\end{figure}
+
+Figures 12a–12b. ROC and precision–recall curves (EVAL-001).
+
+High ROC-AUC (0.930) indicates strong ranking ability; PR-AUC (0.836) reflects good performance on the minority positive class relative to a random baseline.
+
+
 \end{document}
