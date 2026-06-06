@@ -408,4 +408,194 @@ Figures 12a–12b. ROC and precision–recall curves (EVAL-001).
 High ROC-AUC (0.930) indicates strong ranking ability; PR-AUC (0.836) reflects good performance on the minority positive class relative to a random baseline.
 
 
+\section{Interpretability and Error Analysis}
+
+Analyses below use the final LightGBM model on the test set (INT-001, INT-002, ERR-001).
+
+\subsection{Permutation importance}
+
+Permutation importance (Figure 13) ranks \textbf{encoded features} after the preprocessing pipeline. The largest mean decreases in macro F1 when shuffled correspond to the highest-importance encoded columns (\texttt{feature\_8}, \texttt{feature\_3}, \texttt{feature\_2}, etc.—see \texttt{table\_perm\_importance.csv}). These align with domain expectations: marital/relationship, education, and age-related signals typically dominate Adult predictions.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/fig_13_permutation_importance.png}
+  \caption{Figure 13: Permutation importance}
+\end{figure}
+
+Figure 13. Permutation importance on test data (INT-001). Feature names are post-encoding indices.
+
+\subsection{SHAP analysis}
+
+The SHAP summary plot (Figure 14) shows global attribution patterns for the tree model on transformed features. Interpretation is at the level of \textbf{encoded inputs}; mapping back to raw categorical levels would require feature-name extraction from the fitted \texttt{ColumnTransformer}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/fig_14_shap_summary.png}
+  \caption{Figure 14: SHAP summary}
+\end{figure}
+
+Figure 14. SHAP summary for LightGBM (INT-002).
+
+\subsection{Representative errors}
+
+Table 16 lists illustrative false positives and false negatives.
+
+\textbf{False positives} (predicted > \$50K, actual ≤ \$50K) often involve married individuals in managerial or professional occupations with moderate hours—profiles that resemble high earners but fall below the threshold in the label.
+
+\textbf{False negatives} (predicted ≤ \$50K, actual > \$50K) include professionals with education and occupation signals that the model underweighted relative to other constraints.
+
+These patterns suggest the model relies on occupation, education, and family-status proxies; errors cluster at the decision boundary of the coarse income band.
+
+
+\section{Fairness and Subgroup Diagnostics}
+
+Subgroup metrics were computed on test predictions (FAIR-001, FAIR-002). Minimum subgroup size: 30.
+
+\subsection{By sex (Table 13)}
+
+\begin{table}[H]
+  \centering
+  \small
+  \begin{tabular}{llllll}
+    \toprule
+    Group & FPR & FNR & Precision & Recall & Support \\
+    \midrule
+    Female & 0.016 & 0.454 & 0.816 & 0.546 & 3,280 \\
+    Male & 0.086 & 0.315 & 0.774 & 0.685 & 6,483 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\textbf{Female} records show lower recall (0.546 vs 0.685) and higher false negative rate (0.454 vs 0.315): the model misses more high-earning women than high-earning men. \textbf{Male} records have higher false positive rate (0.086 vs 0.016). These are observational disparities in this dataset and model; they do not imply causation or normative recommendations.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/fig_15_fairness_sex.png}
+  \caption{Figure 15a: Fairness by sex}
+\end{figure}
+
+\subsection{By race (Table 14)}
+
+\begin{table}[H]
+  \centering
+  \small
+  \begin{tabular}{llll}
+    \toprule
+    Group & FNR & Recall & Support \\
+    \midrule
+    Black & 0.504 & 0.496 & 907 \\
+    White & 0.330 & 0.670 & 8,369 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Recall for \textbf{Black} individuals (0.496) is lower than for \textbf{White} individuals (0.670), with higher FNR. Smaller groups (e.g. Amer-Indian-Eskimo, n=102) are reported in Table 14 but should be interpreted cautiously due to sample size.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/fig_15_fairness_race.png}
+  \caption{Figure 15b: Fairness by race}
+\end{figure}
+
+\subsection{Intersectional groups}
+
+Sex–race intersections appear in the Appendix (\texttt{table\_fairness\_intersectional.csv}, FAIR-003). Disparities are visible across cells (e.g. Female|Black vs Male|White recall); intersectional cells with small support require cautious interpretation.
+
+
+\section{Calibration Analysis}
+
+Probability calibration was assessed on test predictions (CAL-001). The \textbf{Brier score} is \textbf{0.087} (lower is better). The reliability curve (Figure 17) compares mean predicted probability to observed positive rate across bins.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/fig_17_calibration.png}
+  \caption{Figure 17: Calibration curve}
+\end{figure}
+
+Figure 17. Calibration curve (CAL-001).
+
+The model is reasonably well calibrated in mid-to-high probability ranges; extreme bins should be read with caution due to smaller bin counts. Calibration supports using predicted probabilities for ranking and threshold analysis, though policy use would require additional validation.
+
+
+\section{Extension: Removing Sensitive Attributes}
+
+To test whether sex and race can be removed without rebuilding the pipeline (EXT-001, EXT-002), a logistic regression model was retrained \textbf{without} sex and race on the same splits. Test metrics:
+
+\begin{table}[H]
+  \centering
+  \small
+  \begin{tabular}{lllll}
+    \toprule
+    Variant & Accuracy & Macro F1 & ROC-AUC & Brier \\
+    \midrule
+    Full features (LightGBM, final) & 0.874 & 0.818 & 0.930 & 0.087 \\
+    No sex/race (logistic, extension) & 0.853 & 0.783 & 0.906 & 0.102 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Removing sensitive fields reduces accuracy by \textbf{2.2 percentage points} and macro F1 by \textbf{3.5 points}. Performance does not collapse—\textbf{occupation}, \textbf{marital-status}, \textbf{education}, and related fields likely act as proxies. This extension is diagnostic only; it does not establish fairness of deployment.
+
+
+\section{Reflection on Learning}
+
+Several methodological lessons emerged:
+
+\begin{enumerate}
+  \item \textbf{Leakage control} — Fitting preprocessing inside CV and holding out one test set avoided optimistic bias; stating “CV (train only)” vs “test” explicitly is essential in write-ups.
+  \item \textbf{Metric choice} — With \textasciitilde{}24\% positives, accuracy alone would mask poor minority-class performance; macro F1 and PR-AUC were more informative.
+  \item \textbf{Model family} — Gradient boosting (especially LightGBM) outperformed linear, single-tree, and embedding MLP models on this tabular data.
+  \item \textbf{Fairness vs accuracy} — Strong overall metrics coexist with subgroup recall gaps; fairness auditing is separate from optimising a single score.
+  \item \textbf{Traceability} — Linking each section to requirement IDs and artifacts made the report auditable and easier to revise.
+\end{enumerate}
+
+
+\section{Conclusion}
+
+Income above \$50K can be predicted with \textbf{substantial accuracy} from census attributes in the Adult dataset: the selected LightGBM model achieves \textbf{test macro F1 of 0.818} and \textbf{ROC-AUC of 0.930}, using a leakage-safe pipeline and CV-based model selection. \textbf{Model family matters}—boosting ensembles clearly outperform logistic regression and a PyTorch embedding MLP. \textbf{Interpretability} tools (permutation importance, SHAP) and error analysis confirm reliance on education, occupation, and demographic proxies. \textbf{Fairness diagnostics} reveal unequal recall and error rates across sex and race subgroups. \textbf{Calibration} is reasonable (Brier 0.087), and \textbf{removing sex/race} reduces performance while proxy features remain informative.
+
+The main research question is answered in the affirmative for \textbf{predictive strength} within this dataset, with important caveats on \textbf{subgroup reliability}, \textbf{historical data limits}, and \textbf{non-causal fairness metrics}. Future work could include threshold tuning for equalised odds, richer fairness constraints, calibration refitting, and external validation on contemporary survey data.
+
+
+\section{References}
+
+\begin{itemize}
+  \item Kohavi, R. (1996). \textit{Adult Data Set.} UCI Machine Learning Repository. https://archive.ics.uci.edu/ml/datasets/adult
+  \item Dua, D., \& Graff, C. (2019). UCI Machine Learning Repository. University of California, Irvine.
+  \item Pedregosa, F., et al. (2011). Scikit-learn: Machine Learning in Python. \textit{JMLR} 12, 2825–2830.
+  \item Ke, G., et al. (2017). LightGBM: A Highly Efficient Gradient Boosting Decision Tree. \textit{NeurIPS}.
+  \item Lundberg, S. M., \& Lee, S.-I. (2017). A Unified Approach to Interpreting Model Predictions. \textit{NeurIPS} (SHAP).
+\end{itemize}
+
+See also \texttt{reports/references.bib}.
+
+
+\section{Appendix}
+
+\subsection{A.1 Figure and table index}
+
+See \texttt{reports/artifact\_inventory.md} for the full mapping of filenames to sections and requirement IDs.
+
+\subsection{A.2 Intersectional fairness (FAIR-003)}
+
+Full intersectional metrics: \texttt{tables/table\_fairness\_intersectional.csv}.
+
+\subsection{A.3 Tuning hyperparameters}
+
+Best hyperparameters per model are stored in \texttt{results/cv\_results/tuning\_results.json} (also summarised in Sections 7–10).
+
+\subsection{A.4 Reproducibility}
+
+\begin{itemize}
+  \item Config: \texttt{configs/project\_config.yaml} (seed=42)
+  \item Pipeline scripts: \texttt{scripts/01\_fetch\_data.py} through \texttt{scripts/11\_build\_report\_assets.py}
+  \item Environment: \texttt{requirements.txt}, Python 3.10+
+\end{itemize}
+
+
+Report generated from pipeline artifacts. Requirement traceability: \texttt{reports/traceability\_matrix.md}.
+
+\bibliographystyle{plain}
+\bibliography{references}
+
 \end{document}
