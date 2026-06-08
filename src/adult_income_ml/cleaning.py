@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 
 from adult_income_ml.utils import load_config
@@ -18,10 +19,9 @@ def clean_dataframe(df: pd.DataFrame, cfg: dict | None = None) -> tuple[pd.DataF
     for col in out.select_dtypes(include=["object"]).columns:
         out[col] = out[col].astype(str).str.strip()
 
-    # Missing token
+    # Missing token (np.nan for sklearn SimpleImputer compatibility; pd.NA breaks object columns)
     token = ds["missing_token"]
-    n_before = out.isna().sum().sum()
-    out = out.replace(token, pd.NA)
+    out = out.replace(token, np.nan)
     decisions.append(
         {
             "step": "missing_token",

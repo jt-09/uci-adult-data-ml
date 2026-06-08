@@ -22,16 +22,23 @@ from sklearn.model_selection import cross_validate
 from adult_income_ml.utils import get_n_jobs, load_config
 
 
-def compute_metrics(y_true: np.ndarray, y_pred: np.ndarray, y_proba: np.ndarray | None = None) -> dict[str, float]:
+def compute_metrics(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    y_proba: np.ndarray | None = None,
+) -> dict[str, float]:
+    zero_div = {"zero_division": 0}
     metrics: dict[str, float] = {
         "accuracy": float(accuracy_score(y_true, y_pred)),
         "balanced_accuracy": float(balanced_accuracy_score(y_true, y_pred)),
-        "precision_macro": float(precision_score(y_true, y_pred, average="macro", zero_division=0)),
-        "recall_macro": float(recall_score(y_true, y_pred, average="macro", zero_division=0)),
-        "f1_macro": float(f1_score(y_true, y_pred, average="macro", zero_division=0)),
-        "precision_weighted": float(precision_score(y_true, y_pred, average="weighted", zero_division=0)),
-        "recall_weighted": float(recall_score(y_true, y_pred, average="weighted", zero_division=0)),
-        "f1_weighted": float(f1_score(y_true, y_pred, average="weighted", zero_division=0)),
+        "precision_macro": float(precision_score(y_true, y_pred, average="macro", **zero_div)),
+        "recall_macro": float(recall_score(y_true, y_pred, average="macro", **zero_div)),
+        "f1_macro": float(f1_score(y_true, y_pred, average="macro", **zero_div)),
+        "precision_weighted": float(
+            precision_score(y_true, y_pred, average="weighted", **zero_div)
+        ),
+        "recall_weighted": float(recall_score(y_true, y_pred, average="weighted", **zero_div)),
+        "f1_weighted": float(f1_score(y_true, y_pred, average="weighted", **zero_div)),
     }
     if y_proba is not None:
         metrics["roc_auc"] = float(roc_auc_score(y_true, y_proba))

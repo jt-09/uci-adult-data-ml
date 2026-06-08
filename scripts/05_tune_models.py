@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 
 import joblib
-import pandas as pd
 from sklearn.model_selection import RandomizedSearchCV
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -16,8 +15,16 @@ from adult_income_ml.features import get_X_y
 from adult_income_ml.models import get_model, get_param_grid
 from adult_income_ml.pipelines import build_model_pipeline
 from adult_income_ml.splitting import load_split_indices
-from adult_income_ml.utils import console, ensure_dir, get_n_jobs, get_paths, load_config, load_model_spaces, save_json, set_seed
-
+from adult_income_ml.utils import (
+    console,
+    ensure_dir,
+    get_n_jobs,
+    get_paths,
+    load_config,
+    load_model_spaces,
+    save_json,
+    set_seed,
+)
 
 MODELS = [
     ("logistic_regression", "MODEL-001"),
@@ -83,7 +90,9 @@ def main():
     save_json(all_cv, paths["cv_results"] / "tuning_results.json")
     if best_est is not None:
         joblib.dump(best_est, paths["models"] / "final_model.joblib")
-        save_json({"model": best_name, "cv_f1_macro": best_score}, paths["metrics"] / "best_model.json")
+        save_json(
+            {"model": best_name, "cv_f1_macro": best_score}, paths["metrics"] / "best_model.json"
+        )
     console.print(f"[bold green]Tuning complete. Best: {best_name} ({best_score:.4f})[/bold green]")
 
 

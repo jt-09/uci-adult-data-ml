@@ -54,7 +54,12 @@ def load_split_indices(cfg: dict | None = None) -> tuple[pd.Index, pd.Index]:
     return train_idx, test_idx
 
 
-def get_split_summary_table(df: pd.DataFrame, train_idx: pd.Index, test_idx: pd.Index, cfg: dict | None = None) -> pd.DataFrame:
+def get_split_summary_table(
+    df: pd.DataFrame,
+    train_idx: pd.Index,
+    test_idx: pd.Index,
+    cfg: dict | None = None,
+) -> pd.DataFrame:
     cfg = cfg or load_config()
     target = cfg["dataset"]["target_column"]
     rows = []

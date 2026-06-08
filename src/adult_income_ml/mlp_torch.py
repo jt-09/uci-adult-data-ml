@@ -23,9 +23,7 @@ class EmbeddingMLP(nn.Module):
     ):
         super().__init__()
         hidden_dims = hidden_dims or [128, 64]
-        self.embeddings = nn.ModuleList(
-            [nn.Embedding(n, embedding_dim) for n in cat_cardinalities]
-        )
+        self.embeddings = nn.ModuleList([nn.Embedding(n, embedding_dim) for n in cat_cardinalities])
         in_dim = len(cat_cardinalities) * embedding_dim + n_numeric
         layers: list[nn.Module] = []
         prev = in_dim
@@ -41,7 +39,9 @@ class EmbeddingMLP(nn.Module):
         return self.mlp(x).squeeze(-1)
 
 
-def _encode_categoricals(X: pd.DataFrame, cat_cols: list[str]) -> tuple[np.ndarray, list, list[LabelEncoder]]:
+def _encode_categoricals(
+    X: pd.DataFrame, cat_cols: list[str]
+) -> tuple[np.ndarray, list, list[LabelEncoder]]:
     encoders: list[LabelEncoder] = []
     arrs = []
     cardinalities = []

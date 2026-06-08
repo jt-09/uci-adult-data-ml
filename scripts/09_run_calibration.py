@@ -10,6 +10,8 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
+from sklearn.metrics import brier_score_loss
+
 from adult_income_ml.calibration import calibration_summary_table
 from adult_income_ml.data import load_clean
 from adult_income_ml.features import get_X_y
@@ -17,7 +19,6 @@ from adult_income_ml.plotting import fig_calibration_curve
 from adult_income_ml.reporting import export_table
 from adult_income_ml.splitting import load_split_indices
 from adult_income_ml.utils import console, get_paths, load_config, set_seed, tag_artifact
-from sklearn.metrics import brier_score_loss
 
 
 def main():

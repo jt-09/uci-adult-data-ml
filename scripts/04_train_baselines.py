@@ -5,14 +5,13 @@ import sys
 from pathlib import Path
 
 import joblib
-import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from adult_income_ml.evaluation import compute_metrics, run_cross_validation
-from adult_income_ml.features import get_X_y
 from adult_income_ml.data import load_clean
+from adult_income_ml.evaluation import run_cross_validation
+from adult_income_ml.features import get_X_y
 from adult_income_ml.models import get_model
 from adult_income_ml.pipelines import build_model_pipeline
 from adult_income_ml.splitting import load_split_indices
@@ -34,7 +33,9 @@ def main():
     for name in ["dummy", "logistic_regression"]:
         est = get_model(name, {})
         pipe = build_model_pipeline(est, cfg)
-        cv = run_cross_validation(pipe, X, y, cv=cfg["cv"]["n_splits"], scoring=cfg["cv"]["scoring"])
+        cv = run_cross_validation(
+            pipe, X, y, cv=cfg["cv"]["n_splits"], scoring=cfg["cv"]["scoring"]
+        )
         pipe.fit(X, y)
         results[name] = cv
         joblib.dump(pipe, paths["models"] / f"baseline_{name}.joblib")

@@ -10,8 +10,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.neural_network import MLPClassifier
 from sklearn.tree import DecisionTreeClassifier
 
-from adult_income_ml.utils import load_config
-
 
 def get_model(name: str, params: dict[str, Any] | None = None) -> Any:
     params = params or {}
@@ -40,7 +38,8 @@ def get_model(name: str, params: dict[str, Any] | None = None) -> Any:
         return lgb.LGBMClassifier(random_state=42, verbose=-1, **params)
 
     if name not in registry:
-        raise ValueError(f"Unknown model: {name}. Available: {list(registry) + ['xgboost', 'lightgbm']}")
+        available = list(registry) + ["xgboost", "lightgbm"]
+        raise ValueError(f"Unknown model: {name}. Available: {available}")
     return registry[name](params)
 
 

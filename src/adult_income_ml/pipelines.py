@@ -45,7 +45,11 @@ def build_preprocessor(
     )
 
 
-def build_model_pipeline(estimator, cfg: dict | None = None, drop_sensitive: bool = False) -> Pipeline:
+def build_model_pipeline(
+    estimator,
+    cfg: dict | None = None,
+    drop_sensitive: bool = False,
+) -> Pipeline:
     from sklearn.pipeline import Pipeline as SkPipeline
 
     return SkPipeline(

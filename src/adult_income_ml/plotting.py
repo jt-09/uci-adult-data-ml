@@ -51,7 +51,13 @@ def fig_target_distribution(y: pd.Series, path: Path, cfg: dict | None = None):
     save_fig(fig, path, cfg)
 
 
-def fig_income_by_group(df: pd.DataFrame, col: str, target: str, path: Path, cfg: dict | None = None):
+def fig_income_by_group(
+    df: pd.DataFrame,
+    col: str,
+    target: str,
+    path: Path,
+    cfg: dict | None = None,
+):
     _style(cfg)
     rate = df.groupby(col, dropna=False)[target].mean().sort_values(ascending=False).head(15)
     fig, ax = plt.subplots(figsize=(10, 6))
@@ -61,9 +67,14 @@ def fig_income_by_group(df: pd.DataFrame, col: str, target: str, path: Path, cfg
     save_fig(fig, path, cfg)
 
 
-def fig_numeric_by_target(df: pd.DataFrame, numeric_cols: list[str], target: str, path: Path, cfg: dict | None = None):
+def fig_numeric_by_target(
+    df: pd.DataFrame,
+    numeric_cols: list[str],
+    target: str,
+    path: Path,
+    cfg: dict | None = None,
+):
     _style(cfg)
-    n = len(numeric_cols)
     fig, axes = plt.subplots(2, 3, figsize=(14, 8))
     axes = axes.flatten()
     for i, col in enumerate(numeric_cols[:6]):
@@ -76,7 +87,12 @@ def fig_numeric_by_target(df: pd.DataFrame, numeric_cols: list[str], target: str
     save_fig(fig, path, cfg)
 
 
-def fig_correlation_heatmap(df: pd.DataFrame, numeric_cols: list[str], path: Path, cfg: dict | None = None):
+def fig_correlation_heatmap(
+    df: pd.DataFrame,
+    numeric_cols: list[str],
+    path: Path,
+    cfg: dict | None = None,
+):
     _style(cfg)
     corr = df[numeric_cols].corr()
     fig, ax = plt.subplots(figsize=(10, 8))

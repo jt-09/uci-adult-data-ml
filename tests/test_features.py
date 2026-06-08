@@ -1,5 +1,5 @@
 from adult_income_ml.cleaning import clean_dataframe
-from adult_income_ml.features import build_feature_dictionary, get_X_y, get_feature_columns
+from adult_income_ml.features import build_feature_dictionary, get_feature_columns, get_X_y
 
 
 def test_feature_columns(cfg):

@@ -14,10 +14,9 @@ def calibrate_model(estimator, X_train, y_train, method: str = "isotonic", cv: i
 
 
 def calibration_metrics(y_true, y_proba) -> dict:
-    return {
-        "brier_score": float(brier_score_loss(y_true, y_proba)),
-        **{k: v for k, v in compute_metrics(y_true, (y_proba >= 0.5).astype(int), y_proba).items() if k == "brier_score" or True},
-    }
+    metrics = compute_metrics(y_true, (y_proba >= 0.5).astype(int), y_proba)
+    metrics["brier_score"] = float(brier_score_loss(y_true, y_proba))
+    return metrics
 
 
 def calibration_summary_table(y_true, y_proba) -> pd.DataFrame:

@@ -50,8 +50,12 @@ def main():
         fig_income_by_group(df, col, target, paths["figures"] / f"fig_03_sensitive_{col}.png", cfg)
     tag_artifact(paths["figures"] / "fig_03_sensitive_sex.png", ["EDA-003"])
 
-    fig_numeric_by_target(df, feat["numeric"], target, paths["figures"] / "fig_04_numeric_by_target.png", cfg)
-    fig_income_by_group(df, "education", target, paths["figures"] / "fig_05_categorical_rates.png", cfg)
+    fig_numeric_by_target(
+        df, feat["numeric"], target, paths["figures"] / "fig_04_numeric_by_target.png", cfg
+    )
+    fig_income_by_group(
+        df, "education", target, paths["figures"] / "fig_05_categorical_rates.png", cfg
+    )
     fig_correlation_heatmap(df, feat["numeric"], paths["figures"] / "fig_06_correlation.png", cfg)
 
     console.print("[bold green]EDA-001 to EDA-003 complete[/bold green]")

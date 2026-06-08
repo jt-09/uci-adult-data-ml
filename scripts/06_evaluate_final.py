@@ -11,12 +11,20 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from adult_income_ml.data import load_clean
-from adult_income_ml.evaluation import build_comparison_table, compute_metrics, confusion_matrix_df
+from adult_income_ml.evaluation import compute_metrics, confusion_matrix_df
 from adult_income_ml.features import get_X_y
 from adult_income_ml.plotting import fig_confusion_matrix, fig_model_comparison, fig_roc_pr
 from adult_income_ml.reporting import export_table
 from adult_income_ml.splitting import load_split_indices
-from adult_income_ml.utils import console, get_paths, load_config, load_json, save_json, set_seed, tag_artifact
+from adult_income_ml.utils import (
+    console,
+    get_paths,
+    load_config,
+    load_json,
+    save_json,
+    set_seed,
+    tag_artifact,
+)
 
 
 def main():
@@ -53,7 +61,13 @@ def main():
         paths["figures"] / "fig_11_confusion_matrix.png",
         cfg,
     )
-    fig_roc_pr(y_test, y_proba, paths["figures"] / "fig_12_roc.png", paths["figures"] / "fig_12_pr.png", cfg)
+    fig_roc_pr(
+        y_test,
+        y_proba,
+        paths["figures"] / "fig_12_roc.png",
+        paths["figures"] / "fig_12_pr.png",
+        cfg,
+    )
 
     # Cross-model comparison if tuning results exist
     cv_path = paths["cv_results"] / "tuning_results.json"
@@ -62,9 +76,13 @@ def main():
         rows = [{"model": k, "f1_macro_cv": v["best_score"]} for k, v in cv.items()]
         comp = __import__("pandas").DataFrame(rows)
         export_table(comp, paths["tables"] / "table_11_cross_model_comparison.csv")
-        fig_model_comparison(comp, "f1_macro_cv", paths["figures"] / "fig_10_cross_model_comparison.png", cfg)
+        fig_model_comparison(
+            comp, "f1_macro_cv", paths["figures"] / "fig_10_cross_model_comparison.png", cfg
+        )
 
-    np.savez(paths["predictions"] / "test_predictions.npz", y_true=y_test, y_pred=y_pred, y_proba=y_proba)
+    np.savez(
+        paths["predictions"] / "test_predictions.npz", y_true=y_test, y_pred=y_pred, y_proba=y_proba
+    )
     console.print("[bold green]EVAL-001 complete[/bold green]")
 
 

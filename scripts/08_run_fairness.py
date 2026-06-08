@@ -56,7 +56,9 @@ def main():
     y_proba_ext = ext_pipe.predict_proba(X_te)[:, 1]
     ext_metrics = compute_metrics(y_te.values, y_pred_ext, y_proba_ext)
     full_metrics = compute_metrics(y_test.values, y_pred.values, model.predict_proba(X_test)[:, 1])
-    ext_table = pd.DataFrame([{"variant": "full", **full_metrics}, {"variant": "no_sensitive", **ext_metrics}])
+    ext_table = pd.DataFrame(
+        [{"variant": "full", **full_metrics}, {"variant": "no_sensitive", **ext_metrics}]
+    )
     export_table(ext_table, paths["tables"] / "table_17_extension.csv")
     save_json(ext_metrics, paths["fairness"] / "extension_metrics.json")
     tag_artifact(paths["tables"] / "table_17_extension.csv", ["EXT-001", "EXT-002"])

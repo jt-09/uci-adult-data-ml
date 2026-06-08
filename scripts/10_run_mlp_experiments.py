@@ -12,15 +12,24 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from adult_income_ml.data import load_clean
-from adult_income_ml.evaluation import compute_metrics, run_cross_validation
+from adult_income_ml.evaluation import compute_metrics
 from adult_income_ml.features import get_feature_columns, get_X_y
-from adult_income_ml.models import get_model, get_param_grid
 from adult_income_ml.mlp_torch import predict_proba_torch, train_embedding_mlp
+from adult_income_ml.models import get_model, get_param_grid
 from adult_income_ml.pipelines import build_model_pipeline
 from adult_income_ml.plotting import fig_training_curve
 from adult_income_ml.reporting import export_table
 from adult_income_ml.splitting import load_split_indices
-from adult_income_ml.utils import console, get_n_jobs, get_paths, load_config, load_model_spaces, save_json, set_seed, tag_artifact
+from adult_income_ml.utils import (
+    console,
+    get_n_jobs,
+    get_paths,
+    load_config,
+    load_model_spaces,
+    save_json,
+    set_seed,
+    tag_artifact,
+)
 
 
 def main():
@@ -84,7 +93,9 @@ def main():
         [{"model": "mlp_sklearn", **sk_metrics}, {"model": "mlp_torch_embedding", **torch_metrics}]
     )
     export_table(results, paths["tables"] / "table_11_mlp_results.csv")
-    save_json({"sklearn": sk_metrics, "torch": torch_metrics}, paths["metrics"] / "mlp_results.json")
+    save_json(
+        {"sklearn": sk_metrics, "torch": torch_metrics}, paths["metrics"] / "mlp_results.json"
+    )
 
     console.print("[bold green]MODEL-005 MLP experiments complete[/bold green]")
 

@@ -6,14 +6,17 @@ from pathlib import Path
 
 import joblib
 import matplotlib.pyplot as plt
-import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from adult_income_ml.data import load_clean
 from adult_income_ml.features import get_X_y
-from adult_income_ml.interpretability import get_representative_errors, run_permutation_importance, run_shap_analysis
+from adult_income_ml.interpretability import (
+    get_representative_errors,
+    run_permutation_importance,
+    run_shap_analysis,
+)
 from adult_income_ml.reporting import export_table
 from adult_income_ml.splitting import load_split_indices
 from adult_income_ml.utils import console, get_paths, load_config, set_seed, tag_artifact
@@ -34,7 +37,11 @@ def main():
     export_table(imp.head(20), paths["tables"] / "table_perm_importance.csv")
     fig, ax = plt.subplots(figsize=(10, 6))
     imp.head(15).plot(x="feature", y="importance_mean", kind="barh", ax=ax)
-    fig.savefig(paths["figures"] / "fig_13_permutation_importance.png", dpi=cfg["plotting"]["dpi"], bbox_inches="tight")
+    fig.savefig(
+        paths["figures"] / "fig_13_permutation_importance.png",
+        dpi=cfg["plotting"]["dpi"],
+        bbox_inches="tight",
+    )
     plt.close(fig)
     tag_artifact(paths["figures"] / "fig_13_permutation_importance.png", ["INT-001"])
 

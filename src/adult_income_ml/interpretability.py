@@ -21,7 +21,13 @@ def run_permutation_importance(
 ) -> pd.DataFrame:
     cfg = load_config()
     result = permutation_importance(
-        model, X, y, n_repeats=n_repeats, random_state=42, n_jobs=get_n_jobs(cfg), scoring="f1_macro"
+        model,
+        X,
+        y,
+        n_repeats=n_repeats,
+        random_state=42,
+        n_jobs=get_n_jobs(cfg),
+        scoring="f1_macro",
     )
     names = X.columns.tolist() if hasattr(X, "columns") else [f"f{i}" for i in range(X.shape[1])]
     if hasattr(model, "named_steps"):

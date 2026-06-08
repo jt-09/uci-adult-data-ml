@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from adult_income_ml.utils import ensure_dir, get_paths, load_config
+from adult_income_ml.utils import ensure_dir, get_paths
 
 
 def copy_to_reports(src: Path, dest_name: str, subdir: str = "figures") -> Path:

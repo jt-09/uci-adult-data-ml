@@ -2,7 +2,6 @@
 """Verify key numeric claims in report.md against source artifacts."""
 
 import json
-import re
 import sys
 from pathlib import Path
 
@@ -19,7 +18,9 @@ def load_anchors() -> dict[str, float]:
     anchors = {}
     t01 = pd.read_csv(ROOT / "reports/tables/table_01_dataset_summary.csv")
     anchors["rows"] = float(t01.loc[t01["metric"] == "rows", "value"].iloc[0])
-    anchors["positive_rate"] = float(t01.loc[t01["metric"] == "target_positive_rate", "value"].iloc[0])
+    anchors["positive_rate"] = float(
+        t01.loc[t01["metric"] == "target_positive_rate", "value"].iloc[0]
+    )
 
     t04 = pd.read_csv(ROOT / "reports/tables/table_04_split_summary.csv")
     anchors["train_n"] = float(t04.loc[t04["split"] == "train", "n"].iloc[0])
