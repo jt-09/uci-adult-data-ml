@@ -7,7 +7,7 @@ description: >-
 disable-model-invocation: true
 ---
 
-# /latex — Markdown to Overleaf LaTeX
+# /latex: Markdown to Overleaf LaTeX
 
 Converts project Markdown (especially `reports/report.md`) into an **Overleaf-ready** `.tex` project: `main.tex`, optional `references.bib`, and a `figures/` folder with correct paths. **Do not run `pdflatex` or export PDF** unless the user explicitly asks later.
 
@@ -31,7 +31,7 @@ python .cursor/skills/latex/scripts/md_to_tex.py reports/report.md -o reports/ov
 3. **Verify output** (checklist below). Fix paths or tables manually if needed.
 
 4. **Tell the user how to upload to Overleaf**
-   - New Project → Upload Project → zip `reports/overleaf/` (or upload `main.tex` + `figures/` + `references.bib`).
+   - New Project, Upload Project, zip `reports/overleaf/` (or upload `main.tex`, `figures/`, `references.bib`).
    - Set compiler to **pdfLaTeX** or **LuaLaTeX** (script targets pdfLaTeX + T1 fonts).
    - Click Recompile in Overleaf (user-side; agent does not compile locally).
 
@@ -63,14 +63,14 @@ Image paths in `main.tex` use `figures/filename.png` (no `./`, no `reports/` pre
 
 ## Markdown mapping rules
 
-- `# Title` → `\title{}` + `\maketitle` (first H1 only).
-- `## N Section` → `\section{Section}` (strip leading number if duplicated).
-- `###` → `\subsection{}`.
-- `![caption](path)` → `figure` environment + `\includegraphics{figures/...}`; copy PNG to `overleaf/figures/`.
-- `*caption*` line after image → `\caption{}`.
-- Markdown pipe tables → `booktabs` `tabular` (see script).
-- `` `code` `` → `\texttt{}`.
-- `**bold**` → `\textbf{}`.
+- `# Title` becomes `\title{}` + `\maketitle` (first H1 only).
+- `## N Section` becomes `\section{Section}` (strip leading number if duplicated).
+- `###` becomes `\subsection{}`.
+- `![caption](path)` becomes a `figure` environment + `\includegraphics{figures/...}`; copy PNG to `overleaf/figures/`.
+- `*caption*` line after image becomes `\caption{}`.
+- Markdown pipe tables become `booktabs` `tabular` (see script).
+- `` `code` `` becomes `\texttt{}`.
+- `**bold**` becomes `\textbf{}`.
 - Escape LaTeX specials in prose: `\` `&` `%` `$` `#` `_` `{` `}` `~` `^`.
 
 ## Image path fixes
@@ -81,7 +81,7 @@ Image paths in `main.tex` use `figures/filename.png` (no `./`, no `reports/` pre
 | `figures/foo.png` | `figures/foo.png` |
 | `reports/figures/foo.png` | `figures/foo.png` |
 
-If an image is missing on disk, warn the user and insert `% MISSING: figures/foo.png` — do not invent placeholders.
+If an image is missing on disk, warn the user and insert `% MISSING: figures/foo.png`; do not invent placeholders.
 
 ## Table quality bar
 

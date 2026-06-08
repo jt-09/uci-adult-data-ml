@@ -8,6 +8,8 @@ version = "0.1.0"
 description = "Predicting high income from census attributes: classification, interpretability, and fairness"
 readme = "README.md"
 requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Jay Thakkar" }]
 dependencies = [
     "pandas>=2.0",
     "numpy>=1.24",

@@ -10,8 +10,8 @@ description: >-
 
 ## Workflow
 
-1. Run `scripts/01_fetch_data.py` → `data/raw/adult_raw.csv` (DATA-001).
-2. Run `scripts/02_build_dataset.py` → `data/processed/adult_clean.csv` (DATA-002).
+1. Run `scripts/01_fetch_data.py` to write `data/raw/adult_raw.csv` (DATA-001).
+2. Run `scripts/02_build_dataset.py` to write `data/processed/adult_clean.csv` (DATA-002).
 3. Run `scripts/03_run_eda.py` for EDA figures/tables.
 
 ## Rules

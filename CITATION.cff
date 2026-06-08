@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+title: "Predicting High Income from Census Attributes"
+message: "If you use this repository, please cite it and the UCI Adult dataset."
+authors:
+  - family-names: Thakkar
+    given-names: Jay
+repository-code: "https://github.com/jaythakkar/uci-adult-data-ml"
+license: MIT
+version: 0.1.0
+date-released: 2026-06-05
+keywords:
+  - machine-learning
+  - tabular-classification
+  - fairness
+  - uci-adult
+preferred-citation:
+  type: dataset
+  title: "Adult Data Set"
+  authors:
+    - family-names: Kohavi
+      given-names: Ronny
+  year: 1996
+  url: "https://archive.ics.uci.edu/ml/datasets/adult"

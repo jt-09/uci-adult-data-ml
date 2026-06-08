@@ -1,4 +1,4 @@
-# LaTeX reference — Overleaf preamble template
+# LaTeX reference: Overleaf preamble template
 
 Use this preamble in `main.tex` when building by hand:
 

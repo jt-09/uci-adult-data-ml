@@ -12,4 +12,4 @@ When invoked:
 2. Validate `reports/traceability_matrix.md` has evidence for all IDs.
 3. Ensure `reports/report.md` references numbered figures and tables.
 
-Style: evidence-first, figure/table-heavy, reflective tone per report_outline.md.
+Style: numbered figures/tables, plain technical prose per `reports/report_outline.md`.

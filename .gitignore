@@ -11,8 +11,9 @@ build/
 .pytest_cache/
 .ipynb_checkpoints/
 
-# Generated results
-results/**/*
+# Generated results (keep directory placeholders)
+results/**
+!results/**/
 !results/**/.gitkeep
 
 # Environment

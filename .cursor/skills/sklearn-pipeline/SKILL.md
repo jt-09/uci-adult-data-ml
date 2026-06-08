@@ -9,8 +9,8 @@ description: >-
 
 ## Workflow
 
-1. Split with `splitting.split_train_test` — stratified 80/20, persist indices to `results/splits/`.
-2. Build preprocessor via `pipelines.build_preprocessor()` — fit ONLY on training data inside `Pipeline.fit`.
+1. Split with `splitting.split_train_test`: stratified 80/20, persist indices to `results/splits/`.
+2. Build preprocessor via `pipelines.build_preprocessor()`; fit ONLY on training data inside `Pipeline.fit`.
 3. For extension (EXT-001), use `drop_sensitive=True`.
 
 ## Rules

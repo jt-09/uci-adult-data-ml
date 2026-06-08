@@ -1,4 +1,4 @@
-.PHONY: setup fetch build eda train tune evaluate interpret fairness calibrate mlp report test lint all dirs
+.PHONY: setup fetch build eda train tune evaluate interpret fairness calibrate mlp report verify test lint all dirs
 
 PYTHON ?= python
 PIP ?= pip
@@ -43,6 +43,9 @@ mlp:
 
 report:
 	$(PYTHON) scripts/11_build_report_assets.py
+
+verify:
+	$(PYTHON) scripts/12_verify_report_numbers.py
 
 test:
 	pytest tests/ -v

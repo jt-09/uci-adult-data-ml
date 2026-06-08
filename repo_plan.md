@@ -1,12 +1,12 @@
-Project title
+# Repository plan (internal)
 
-Predicting High Income from Census Attributes: A Binary Classification, Interpretability, and Fairness Study
+Planning notes from initial project setup. Public docs live in README and `docs/`.
 
-Possible subtitle:
+## Title
 
-A supervised machine-learning analysis of the UCI Adult / Census Income dataset
+Predicting High Income from Census Attributes: classification, interpretability, and fairness on UCI Adult.
 
-Full repo plan
+## Directory layout
 adult-income-ml-study/
 │
 ├── README.md
@@ -118,11 +118,11 @@ Supporting objectives
 Build a leakage-aware and reproducible binary classification dataset.
 Compare classical models and neural MLP models under the same split and metric protocol.
 Evaluate whether stronger predictive performance comes at the cost of interpretability or subgroup imbalance.
-Use SHAP, permutation importance, coefficients, calibration, and subgroup confusion matrices to explain model behaviour.
-Produce a report similar in style to your sample: evidence-first, figure/table-heavy, and reflective.
+Use SHAP, permutation importance, coefficients, calibration, and subgroup confusion matrices to explain model behavior.
+Produce a figure/table-heavy report with numbered sections and an appendix.
 Planned report structure
 
-Match your sample report closely:
+Section outline implemented in `reports/report.md`:
 
 1 Introduction
 2 Research Focus
@@ -146,7 +146,7 @@ Match your sample report closely:
 20 References
 A Appendix
 
-This is the Adult Income equivalent of your sample’s AFCD structure.
+This mirrors a standard applied ML report layout (intro through conclusion plus appendix).
 
 Traceability system
 
@@ -167,9 +167,9 @@ MODEL-002	Train decision tree	Section 8
 MODEL-003	Train random forest	Section 9
 MODEL-004	Train gradient boosting	Section 10
 MODEL-005	Train MLP	Section 11
-EVAL-001	Compare accuracy, balanced accuracy, precision, recall, F1, ROC-AUC, PR-AUC	Tables 6–11
+EVAL-001	Compare accuracy, balanced accuracy, precision, recall, F1, ROC-AUC, PR-AUC	Tables 6-11
 INT-001	Run permutation importance	Figure 12
-INT-002	Run SHAP analysis	Figures 13–14
+INT-002	Run SHAP analysis	Figures 13-14
 FAIR-001	Evaluate by sex	Table 13, Figure 15
 FAIR-002	Evaluate by race	Table 14, Figure 16
 FAIR-003	Evaluate by intersectional groups if sample size allows	Appendix

@@ -10,7 +10,7 @@ description: >-
 ## Workflow
 
 1. Load final model from `results/models/final_model.joblib`.
-2. Run permutation importance → `results/shap/` or `reports/tables/table_16_errors.csv`.
+2. Run permutation importance; outputs under `results/shap/` or `reports/tables/table_16_errors.csv`.
 3. SHAP: TreeExplainer for tree models; LinearExplainer or skip on failure.
 4. Export representative FP/FN rows (ERR-001).
 

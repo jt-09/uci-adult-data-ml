@@ -16,5 +16,5 @@ description: >-
 
 ## Rules
 
-- Figure numbering: `fig_01_` … `fig_18_` per report_config.yaml.
+- Figure numbering: `fig_01_` through `fig_18_` per report_config.yaml.
 - Every requirement ID must have a linked file path in the matrix.
