@@ -1,0 +1,7 @@
+_book/
+**/*.knit.md
+**/*_files/
+/.quarto/
+figures/*.png
+
+**/*.quarto_ipynb

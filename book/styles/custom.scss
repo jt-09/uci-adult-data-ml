@@ -1,0 +1,16 @@
+/*-- scss:defaults --*/
+$headings-font-weight: 600;
+$link-color: #2c5aa0;
+
+/*-- scss:rules --*/
+blockquote {
+  border-left: 4px solid $link-color;
+  padding-left: 1rem;
+  color: #555;
+  font-style: italic;
+}
+
+.callout-note {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}

@@ -1,0 +1,62 @@
+project:
+  type: book
+  output-dir: _book
+  preview:
+    port: 4242
+    browser: false
+
+book:
+  title: "Predicting High Income from Census Attributes"
+  subtitle: "A developer log on tabular ML, fairness, and interpretability"
+  author: "Jay Thakkar"
+  date: today
+  date-format: "MMMM D, YYYY"
+  chapters:
+    - index.qmd
+    - chapter-01-setup.qmd
+    - chapter-02-exploring.qmd
+    - chapter-03-modeling.qmd
+    - chapter-04-under-the-hood.qmd
+    - references.qmd
+  repo-url: https://github.com/jaythakkar/uci-adult-data-ml
+  repo-actions: [edit, issue]
+
+website:
+  site-url: https://jaythakkar.github.io/uci-adult-data-ml/
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: chapter-01-setup.qmd
+        text: "Ch 1: Setup"
+      - href: chapter-02-exploring.qmd
+        text: "Ch 2: EDA"
+      - href: chapter-03-modeling.qmd
+        text: "Ch 3: Modeling"
+      - href: chapter-04-under-the-hood.qmd
+        text: "Ch 4: Reflection"
+    right:
+      - icon: github
+        href: https://github.com/jaythakkar/uci-adult-data-ml
+  reader-mode: true
+  page-footer:
+    center: "Built with Quarto | Source ML pipeline unchanged"
+
+bibliography: ../reports/references.bib
+
+format:
+  html:
+    theme:
+      - cosmo
+      - styles/custom.scss
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    code-fold: true
+    fig-align: center
+    fig-cap-location: bottom
+    smooth-scroll: true
+    link-external-newwindow: true
+
+execute:
+  enabled: false
