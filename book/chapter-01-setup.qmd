@@ -1,0 +1,60 @@
+---
+title: "The Setup & The Data"
+---
+
+I started this project because the UCI Adult dataset is the kind of messy, imbalanced tabular problem every ML engineer hits eventually. Census-style rows, a binary income label, missing values encoded as question marks, and enough social structure in the features to make both modeling and fairness auditing interesting. I wanted to see how far I could get with a reproducible pipeline - and whether a strong overall score would still hide subgroup problems.
+
+## Why this dataset, why this question
+
+Income classification from census variables is a classic benchmark, but I was less interested in beating a leaderboard and more interested in walking through the full lifecycle: cleaning, EDA, model comparison, held-out evaluation, interpretability, and fairness checks. The label is simple - does annual income exceed \$50,000? - but the path from raw CSV to a defensible conclusion is not.
+
+My main question, in plain language: **how well can I predict high income from demographic, education, employment, and financial attributes, and what do preprocessing choices, model family, calibration, and subgroup diagnostics tell me about how much to trust the result?**
+
+I set four concrete goals along the way:
+
+1. Build a leakage-aware, reproducible binary classification dataset.
+2. Compare classical models and neural MLP variants under the same split and metric protocol.
+3. Check whether stronger predictive performance trades off against interpretability or subgroup disparity.
+4. Produce an evidence-first write-up where every claim points to a figure or table.
+
+## How I would pick a winner
+
+Before touching any models, I decided on the selection rule: **mean 5-fold cross-validated macro F1 on the training split only**. The held-out test set would be used once, at the end, for the selected model. Hyperparameters would come from randomized search on training data. The test set would never influence selection or tuning - that was non-negotiable.
+
+## Fetching and defining the task
+
+I fetched the data reproducibly from the UCI ML Repository (id=2) via `ucimlrepo`. The prediction task is binary: **income <= \$50K (label 0)** vs **income > \$50K (label 1)**.
+
+Cleaning was where I hit my first real friction. The raw files use `?` as a missing-value token, not proper NA values. I replaced those, dropped duplicates, and encoded the target as 0/1. After cleaning, the analysis dataset contained **48,813** rows and **15** columns.
+
+| Metric | Value |
+|--------|-------|
+| Rows | 48,813 |
+| Columns | 15 |
+| Target positive rate | 23.9% |
+
+: Dataset summary after cleaning {#tbl-dataset-summary}
+
+The overall high-income (**positive class**) rate is **23.9%** - substantial class imbalance that would shape every metric choice later.
+
+| Step | Detail |
+|------|--------|
+| Missing token | `?` replaced with NA |
+| Duplicates | 29 duplicate rows removed |
+| Target encoding | `<=50K` -> 0, `>50K` -> 1 |
+
+: Key cleaning steps applied to the raw Adult data {#tbl-cleaning}
+
+## First look at missingness
+
+Once the basics were in place, I audited missingness column by column. Several categorical fields still had gaps after replacing `?`, which told me imputation strategy would matter downstream.
+
+![Missing values by column (Figure 1)](figures/fig_01_missingness.png){#fig-missingness width=90%}
+
+Several categorical fields show missing values after the `?` -> NA conversion. I made a mental note: mode imputation inside cross-validation folds, never fit on test data.
+
+## A quick caveat before going further
+
+The Adult dataset reflects a specific U.S. census-era survey population. Labels are coarse (two income bands), and features may encode historical social structure. Everything I report describes associative patterns in **this** dataset only - I am not claiming the model generalizes to other populations or time periods. I return to limitations and deployment ethics in [Chapter 4](chapter-04-under-the-hood.qmd).
+
+With the data loaded and cleaned, the next step was to actually look at what the census rows contained before training anything.

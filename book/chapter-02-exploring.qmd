@@ -1,0 +1,70 @@
+---
+title: "Exploring the Census"
+---
+
+Before touching sklearn, I needed to understand what the census rows actually looked like. EDA is where I form intuitions about which features might separate classes, whether imbalance will dominate accuracy, and whether sensitive attributes already show different base rates. This chapter is that discovery phase.
+
+## What I kept in the feature set
+
+I retained fourteen input features: six numeric (age, fnlwgt, education-num, capital-gain, capital-loss, hours-per-week) and eight categorical (workclass, education, marital-status, occupation, relationship, race, sex, native-country). A sample of the feature dictionary is below; the full table lives in `reports/tables/table_02_feature_dictionary.csv`.
+
+| Feature | Type | Sensitive |
+|---------|------|-----------|
+| age | numeric | no |
+| fnlwgt | numeric | no |
+| education-num | numeric | no |
+| capital-gain | numeric | no |
+| capital-loss | numeric | no |
+| hours-per-week | numeric | no |
+| workclass | categorical | no |
+| education | categorical | no |
+| marital-status | categorical | no |
+| occupation | categorical | no |
+| relationship | categorical | no |
+| race | categorical | yes |
+| sex | categorical | yes |
+| native-country | categorical | no |
+
+: Feature dictionary - numeric vs categorical, sensitive flags {#tbl-features}
+
+I flagged **sex** and **race** as sensitive attributes for fairness auditing later. They stayed in the primary modeling pipeline; I tested removal separately in Chapter 4.
+
+## Numeric separation between income classes
+
+I stratified numeric distributions by the income label to see which continuous fields actually moved. **Age**, **education-num**, and **hours-per-week** showed visible separation between classes. **Capital-gain** was sparse but jumped out as informative for high earners when it was non-zero.
+
+![Numeric feature distributions stratified by income label (Figure 4)](figures/fig_04_numeric_by_target.png){#fig-numeric width=90%}
+
+That pattern matched my intuition: income in this dataset correlates with experience, education level, and work intensity. I did not drop any numeric field at this stage.
+
+## Education and correlation structure
+
+Next I wanted to see the impact of education, so I plotted the high-income rate by education level. The result was interesting because Doctorate and Prof-school levels heavily dominated, as shown in @fig-education-rates. Tree models would almost certainly lean on education-related splits.
+
+![Income rate by education level (Figure 5)](figures/fig_05_categorical_rates.png){#fig-education-rates width=90%}
+
+I also checked numeric correlation. Features showed moderate correlation, but I did not drop anything solely for collinearity - tree-based models handle redundancy, and I wanted the same feature set across model families for a fair comparison.
+
+![Numeric correlation heatmap (Figure 6)](figures/fig_06_correlation.png){#fig-correlation width=90%}
+
+## Feature selection - or the lack of it
+
+I deliberately skipped a separate univariate filter beyond EDA. All fourteen inputs feed a unified `ColumnTransformer`: median/mode imputation, standardisation for numeric fields, one-hot encoding for categoricals. Keeping one consistent pipeline made cross-validation leakage-safe and model comparison cleaner.
+
+## Class imbalance - the number that changed my metrics
+
+Only **23.9%** of records are positive (income > \$50K). At this point I realised accuracy alone would be misleading: a naive majority-class classifier could look good while failing high earners. I committed to reporting **macro F1** and **balanced accuracy** alongside accuracy for the rest of the project.
+
+![Target class distribution (Figure 2)](figures/fig_02_target_distribution.png){#fig-target-dist width=90%}
+
+## Sensitive attributes and base-rate differences
+
+I then looked at high-income rates by sex and race. The gaps were obvious - different groups enter the dataset with different base rates of earning above \$50K. That does not tell me a model will be unfair, but it warned me to run subgroup diagnostics after training.
+
+![Income rate by sex (Figure 3a)](figures/fig_03_sensitive_sex.png){#fig-sensitive-sex width=85%}
+
+![Income rate by race (Figure 3b)](figures/fig_03_sensitive_race.png){#fig-sensitive-race width=85%}
+
+Imbalance plus group rate differences foreshadowed everything in the back half of this project: macro-averaged metrics during tuning, and explicit fairness tables on the test set after selection.
+
+EDA answered *what* was in the data. The next step was building a leakage-safe pipeline to learn from it.
