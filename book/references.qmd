@@ -1,0 +1,19 @@
+---
+title: "References"
+bibliography: ../reports/references.bib
+---
+
+# References {.unnumbered}
+
+::: {#refs}
+:::
+
+## Additional sources cited in the original report
+
+- Kohavi, R. (1996). *Adult Data Set.* UCI Machine Learning Repository. <https://archive.ics.uci.edu/ml/datasets/adult>
+- Dua, D., & Graff, C. (2019). UCI Machine Learning Repository. University of California, Irvine.
+- Pedregosa, F., et al. (2011). Scikit-learn: Machine Learning in Python. *JMLR* 12, 2825-2830.
+- Ke, G., et al. (2017). LightGBM: A Highly Efficient Gradient Boosting Decision Tree. *NeurIPS*.
+- Lundberg, S. M., & Lee, S.-I. (2017). A Unified Approach to Interpreting Model Predictions. *NeurIPS* (SHAP).
+
+Full BibTeX entries: [`reports/references.bib`](../reports/references.bib).

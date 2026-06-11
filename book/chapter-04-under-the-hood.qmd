@@ -1,0 +1,141 @@
+---
+title: "Under the Hood & Final Thoughts"
+---
+
+A high test macro F1 felt good, but I was not done until I understood *why* the model worked and *who* it failed. This chapter covers the single honest test evaluation, interpretability, fairness, calibration, a sensitive-attribute removal experiment, and what I would do differently next time.
+
+## Final evaluation - one pass on the test set
+
+I evaluated the selected **LightGBM** pipeline **once** on the held-out test set. Test macro F1 (**0.818**) landed close to CV macro F1 (**0.815**), which suggested reasonable generalisation without severe overfitting on this split.
+
+| Metric | Test value |
+|--------|------------|
+| Accuracy | 0.874 |
+| Balanced accuracy | 0.802 |
+| Precision (macro) | 0.839 |
+| Recall (macro) | 0.802 |
+| **F1 (macro)** | **0.818** |
+| F1 (weighted) | 0.871 |
+| ROC-AUC | 0.930 |
+| PR-AUC | 0.836 |
+| Brier score | 0.087 |
+
+: Final LightGBM test-set metrics {#tbl-test-metrics}
+
+ROC-AUC (**0.930**) indicated strong ranking ability; PR-AUC (**0.836**) reflected solid performance on the minority positive class relative to a random baseline.
+
+![Confusion matrix on the test set (Figure 11)](figures/fig_11_confusion_matrix.png){#fig-confusion width=75%}
+
+![ROC curve (Figure 12a)](figures/fig_12_roc.png){#fig-roc width=80%}
+
+![Precision-recall curve (Figure 12b)](figures/fig_12_pr.png){#fig-pr width=80%}
+
+## Interpretability - what the model actually used
+
+### Permutation importance
+
+I shuffled each encoded feature and measured the drop in macro F1. The largest decreases aligned with domain expectations: marital/relationship, education, and age-related signals typically dominate Adult predictions - though feature names here are post-encoding indices from the fitted `ColumnTransformer`.
+
+![Permutation importance on test data (Figure 13)](figures/fig_13_permutation_importance.png){#fig-perm width=90%}
+
+### SHAP values
+
+The SHAP summary plot showed global attribution patterns for the tree model on transformed features. Interpretation stays at the encoded-input level; mapping back to raw categorical levels would require extracting feature names from the fitted pipeline.
+
+![SHAP summary for LightGBM (Figure 14)](figures/fig_14_shap_summary.png){#fig-shap width=90%}
+
+What struck me was how concentrated the importance was - a handful of encoded columns carried most of the signal, consistent with the education and occupation patterns I saw in EDA.
+
+### Representative errors
+
+Looking at concrete mistakes helped more than aggregate scores:
+
+- **False positives** (predicted > \$50K, actual <= \$50K) often involved married individuals in managerial or professional occupations with moderate hours - profiles that resemble high earners but fall below the threshold in the label.
+- **False negatives** (predicted <= \$50K, actual > \$50K) included professionals with education and occupation signals the model underweighted relative to other constraints.
+
+Errors clustered at the decision boundary of a coarse income band. The model leans on occupation, education, and family-status proxies.
+
+## Fairness - where overall metrics were not the whole story
+
+When I broke test predictions out by sex, the recall gap was hard to ignore: I was missing high-earning women far more often than high-earning men.
+
+| Group | FPR | FNR | Precision | Recall | Support |
+|-------|-----|-----|-----------|--------|---------|
+| Female | 0.016 | 0.454 | 0.816 | 0.546 | 3,280 |
+| Male | 0.086 | 0.315 | 0.774 | 0.685 | 6,483 |
+
+: Subgroup metrics by sex (test set) {#tbl-fairness-sex}
+
+**Female** records show lower recall (**0.546** vs **0.685**) and higher false negative rate (**0.454** vs **0.315**). **Male** records have higher false positive rate (**0.086** vs **0.016**). These are observational disparities in this dataset and model - they do not imply causation or deployment policy.
+
+![Fairness metrics by sex (Figure 15a)](figures/fig_15_fairness_sex.png){#fig-fairness-sex width=85%}
+
+By race, the pattern repeated in a different shape:
+
+| Group | FNR | Recall | Support |
+|-------|-----|--------|---------|
+| Black | 0.504 | 0.496 | 907 |
+| White | 0.330 | 0.670 | 8,369 |
+
+: Subgroup metrics by race (test set, selected groups) {#tbl-fairness-race}
+
+Recall for **Black** individuals (**0.496**) is lower than for **White** individuals (**0.670**), with higher FNR. Smaller groups (e.g. Amer-Indian-Eskimo, n=102) appear in the full table but need cautious interpretation due to sample size.
+
+![Fairness metrics by race (Figure 15b)](figures/fig_15_fairness_race.png){#fig-fairness-race width=85%}
+
+### Intersectional groups
+
+Sex-race intersections tell a finer-grained story. Disparities are visible across cells (e.g. Female|Black vs Male|White recall); cells with small support require extra caution. Full metrics: `reports/tables/table_fairness_intersectional.csv`.
+
+Strong overall F1 and unequal subgroup recall can coexist. Fairness auditing is separate from optimising a single score.
+
+## Calibration - can I trust the probabilities?
+
+The **Brier score** is **0.087** (lower is better). The reliability curve compares mean predicted probability to observed positive rate across bins.
+
+![Calibration curve (Figure 17)](figures/fig_17_calibration.png){#fig-calibration width=90%}
+
+The model is reasonably well calibrated in mid-to-high probability ranges; extreme bins deserve caution due to smaller bin counts. For ranking and threshold analysis, the probabilities seem usable - policy deployment would need more validation.
+
+## What if I removed sex and race?
+
+I retrained a logistic regression model **without** sex and race on the same splits to see whether performance would collapse.
+
+| Variant | Accuracy | Macro F1 | ROC-AUC | Brier |
+|---------|----------|----------|---------|-------|
+| Full features (LightGBM, final) | 0.874 | 0.818 | 0.930 | 0.087 |
+| No sex/race (logistic, extension) | 0.853 | 0.783 | 0.906 | 0.102 |
+
+: Extension: full LightGBM vs model without sex/race {#tbl-extension}
+
+Removing sensitive fields reduced accuracy by **2.2 percentage points** and macro F1 by **3.5 points**. Performance did not collapse - **occupation**, **marital-status**, **education**, and related fields likely act as proxies. This extension is diagnostic only; it does not establish fairness of deployment.
+
+## What I learned
+
+Several methodological lessons stuck with me:
+
+1. **Leakage control** - Fitting preprocessing inside CV and holding out one test set avoided optimistic bias. Labelling "CV (train only)" vs "test" explicitly matters in every write-up.
+2. **Metric choice** - With ~24% positives, accuracy alone would mask poor minority-class performance; macro F1 and PR-AUC were more informative.
+3. **Model family** - Gradient boosting (especially LightGBM) outperformed linear, single-tree, and embedding MLP models on this tabular data.
+4. **Fairness vs accuracy** - Strong overall metrics coexist with subgroup recall gaps; fairness auditing is a separate step from tuning one number.
+5. **Traceability** - Linking claims to artifacts made the project auditable and easier to revise into this developer log.
+
+## Conclusion
+
+Income above \$50K can be predicted with **substantial accuracy** from census attributes in the Adult dataset: the selected LightGBM model achieves **test macro F1 of 0.818** and **ROC-AUC of 0.930**, using a leakage-safe pipeline and CV-based model selection.
+
+**Model family matters** - boosting ensembles clearly outperform logistic regression and a PyTorch embedding MLP. **Interpretability** tools confirm reliance on education, occupation, and demographic proxies. **Fairness diagnostics** reveal unequal recall and error rates across sex and race subgroups. **Calibration** is reasonable (Brier 0.087), and **removing sex/race** reduces performance while proxy features remain informative.
+
+I would answer the main research question in the affirmative for **predictive strength** within this dataset - with important caveats on **subgroup reliability**, **historical data limits**, and **non-causal fairness metrics**. Future work could include threshold tuning for equalised odds, richer fairness constraints, calibration refitting, and external validation on contemporary survey data.
+
+::: {.callout-warning}
+## Limitations I am carrying forward
+
+- **Historical data:** UCI Adult reflects a specific U.S. survey era; patterns may not transfer today.
+- **Coarse labels:** Binary income bands hide within-class heterogeneity.
+- **Fairness metrics:** Subgroup FPR/FNR/recall describe this model on this test split - not causal fairness guarantees.
+- **Interpretability:** SHAP and permutation importance operate on encoded features.
+- **Neural models:** The PyTorch embedding MLP was not fully optimised; underperformance is not a definitive ceiling for neural tabular methods.
+:::
+
+The [original academic report](../reports/report.md) and [PDF](../reports/overleaf/main.pdf) remain unchanged alongside this narrative rewrite.
