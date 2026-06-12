@@ -1,0 +1,55 @@
+name: Quarto Publish
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: quarto-pages
+  cancel-in-progress: true
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: 1.4.554
+
+      - name: Sync static figures into book/
+        working-directory: book
+        run: bash scripts/sync-assets.sh
+
+      - name: Render Quarto book
+        working-directory: book
+        run: quarto render
+
+      - name: Smoke test rendered output
+        working-directory: book
+        run: |
+          test -f _book/index.html
+          test -s _book/index.html
+          for f in chapter-01-setup.html chapter-02-exploring.html \
+                   chapter-03-modeling.html chapter-04-under-the-hood.html; do
+            test -f "_book/$f"
+            test -s "_book/$f"
+          done
+          find _book -name 'fig_01_missingness.png' | grep -q .
+          echo "Smoke test passed."
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: book/_book
+          publish_branch: gh-pages
+          force_orphan: true
+          commit_message: "Deploy Quarto book @ ${{ github.sha }}"
