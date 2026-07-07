@@ -56,6 +56,13 @@ cv:
 fairness:
   min_subgroup_size: 30
 
+learning_curves:
+  train_sizes: [0.1, 0.25, 0.5, 0.75, 1.0]
+  models:
+    - logistic_regression
+    - random_forest
+    - lightgbm
+
 plotting:
   dpi: 150
   style: seaborn-v0_8-whitegrid

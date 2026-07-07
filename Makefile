@@ -1,4 +1,4 @@
-.PHONY: setup fetch build eda train tune evaluate interpret fairness calibrate mlp report verify test lint all dirs
+.PHONY: setup fetch build eda train tune learning-curves evaluate interpret fairness calibrate mlp report verify test lint demo all dirs
 
 PYTHON ?= python
 PIP ?= pip
@@ -25,6 +25,10 @@ train:
 
 tune:
 	$(PYTHON) scripts/05_tune_models.py
+	$(PYTHON) scripts/05b_learning_curves.py
+
+learning-curves:
+	$(PYTHON) scripts/05b_learning_curves.py
 
 evaluate:
 	$(PYTHON) scripts/06_evaluate_final.py
@@ -44,6 +48,9 @@ mlp:
 report:
 	$(PYTHON) scripts/11_build_report_assets.py
 
+results:
+	$(PYTHON) scripts/generate_results_snapshot.py
+
 verify:
 	$(PYTHON) scripts/12_verify_report_numbers.py
 
@@ -53,5 +60,8 @@ test:
 lint:
 	ruff check src scripts tests
 	black --check src scripts tests
+
+demo:
+	$(PYTHON) demo/app.py
 
 all: setup fetch build eda train tune evaluate interpret fairness calibrate mlp report

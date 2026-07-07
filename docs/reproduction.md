@@ -38,6 +38,7 @@ After clone, you can view the committed report and figures immediately. To verif
 | 3 | `03_run_eda.py` | `fig_01` - `fig_06` |
 | 4 | `04_train_baselines.py` | Baseline CV summaries |
 | 5 | `05_tune_models.py` | `results/models/final_model.joblib`, tuning JSON |
+| 5b | `05b_learning_curves.py` | `fig_07`, `fig_08_*` learning curves (runs after tune) |
 | 6 | `06_evaluate_final.py` | Test metrics, `fig_10` - `fig_12` |
 | 7 | `07_run_interpretability.py` | `fig_13`, `results/shap/shap_summary.png` |
 | 8 | `08_run_fairness.py` | Fairness tables, `fig_15_*` |
@@ -56,6 +57,8 @@ After clone, you can view the committed report and figures immediately. To verif
 | `fig_04_numeric_by_target.png` | `03_run_eda.py` |
 | `fig_05_categorical_rates.png` | `03_run_eda.py` |
 | `fig_06_correlation.png` | `03_run_eda.py` |
+| `fig_07_logistic_learning_curve.png` | `05b_learning_curves.py` |
+| `fig_08_random_forest_learning_curve.png`, `fig_08_lightgbm_learning_curve.png` | `05b_learning_curves.py` |
 | `fig_09_mlp_training_curve.png` | `10_run_mlp_experiments.py` |
 | `fig_10_cross_model_comparison.png` | `06_evaluate_final.py` |
 | `fig_11_confusion_matrix.png` | `06_evaluate_final.py` |
@@ -65,7 +68,9 @@ After clone, you can view the committed report and figures immediately. To verif
 | `fig_15_fairness_sex.png`, `fig_15_fairness_race.png` | `08_run_fairness.py` |
 | `fig_17_calibration.png` | `09_run_calibration.py` |
 
-Figures 7, 8, and 16 from the original plan were not implemented; per-model learning curves are summarized in tables and JSON instead.
+Figure 16 from the original plan was not implemented (representative errors are in a table only).
+
+Learning curves (`05b`) add roughly 5-15 minutes after tuning on CPU.
 
 ## Configuration
 
@@ -80,7 +85,7 @@ Figures 7, 8, and 16 from the original plan were not implemented; per-model lear
 |-------|------------------|
 | Fetch + build | Under 1 minute |
 | EDA | 1-2 minutes |
-| Tune (`05`) | 30-60 minutes |
+| Tune (`05` + `05b`) | 35-75 minutes |
 | Evaluate through report | 10-20 minutes |
 
 GPU is optional; PyTorch MLP runs on CPU by default.

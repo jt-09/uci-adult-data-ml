@@ -165,6 +165,26 @@ def fig_subgroup_metrics(df: pd.DataFrame, path: Path, cfg: dict | None = None):
     save_fig(fig, path, cfg)
 
 
+def fig_learning_curve(
+    train_sizes,
+    train_scores,
+    val_scores,
+    title: str,
+    path: Path,
+    cfg: dict | None = None,
+):
+    _style(cfg)
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.plot(train_sizes, train_scores, marker="o", label="Train CV score")
+    ax.plot(train_sizes, val_scores, marker="o", label="Validation CV score")
+    ax.set_xlabel("Training set size")
+    ax.set_ylabel("Macro F1")
+    ax.set_title(title)
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    save_fig(fig, path, cfg)
+
+
 def fig_training_curve(history: dict, path: Path, cfg: dict | None = None):
     _style(cfg)
     fig, ax = plt.subplots(figsize=(8, 5))

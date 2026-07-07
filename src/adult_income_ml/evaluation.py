@@ -17,7 +17,7 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
 )
-from sklearn.model_selection import cross_validate
+from sklearn.model_selection import cross_validate, learning_curve
 
 from adult_income_ml.utils import get_n_jobs, load_config
 
@@ -76,6 +76,34 @@ def run_cross_validation(
 def confusion_matrix_df(y_true, y_pred) -> pd.DataFrame:
     cm = confusion_matrix(y_true, y_pred)
     return pd.DataFrame(cm, index=["true_0", "true_1"], columns=["pred_0", "pred_1"])
+
+
+def run_learning_curve(
+    pipeline,
+    X: pd.DataFrame,
+    y: pd.Series,
+    train_sizes,
+    cv: int = 5,
+    scoring: str = "f1_macro",
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Learning curve on training data only (train sizes vs CV scores)."""
+    cfg = load_config()
+    sizes, train_scores, val_scores = learning_curve(
+        pipeline,
+        X,
+        y,
+        train_sizes=train_sizes,
+        cv=cv,
+        scoring=scoring,
+        n_jobs=get_n_jobs(cfg),
+        shuffle=True,
+        random_state=cfg["project"]["seed"],
+    )
+    return (
+        sizes,
+        train_scores.mean(axis=1),
+        val_scores.mean(axis=1),
+    )
 
 
 def build_comparison_table(results: dict[str, dict]) -> pd.DataFrame:
