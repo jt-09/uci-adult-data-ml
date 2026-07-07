@@ -55,6 +55,6 @@ Several categorical fields show missing values after the `?` -> NA conversion. I
 
 ## A quick caveat before going further
 
-The Adult dataset reflects a specific U.S. census-era survey population. Labels are coarse (two income bands), and features may encode historical social structure. Everything I report describes associative patterns in **this** dataset only - I am not claiming the model generalizes to other populations or time periods. I return to limitations and deployment ethics in [Chapter 4](chapter-04-under-the-hood.qmd).
+The Adult dataset reflects a specific U.S. census-era survey population. Labels are coarse (two income bands), and features may encode historical social structure. Everything I report describes associative patterns in **this** dataset only - I am not claiming the model generalizes to other populations or time periods. A longer discussion of what would be needed for 2026-era use is in [Chapter 4](chapter-04-under-the-hood.qmd) and the [external validity essay](https://github.com/jt-09/uci-adult-data-ml/blob/main/docs/external_validity_2026.md).
 
 With the data loaded and cleaned, the next step was to actually look at what the census rows contained before training anything.

@@ -35,6 +35,20 @@ The preprocessor is fitted **only on training folds** inside each CV split (or o
 
 Per-model learning curves were not exported for every family; CV scores and best hyperparameters carry the comparison.
 
+## Did more data help? Learning curves
+
+Before comparing final CV scores, I wanted to see whether models were still gaining from more training rows or starting to plateau. I plotted learning curves on the **training split only** (macro F1 vs training set size, 5-fold CV).
+
+![Logistic regression learning curve (Figure 7)](figures/fig_07_logistic_learning_curve.png){#fig-lc-logistic width=90%}
+
+Logistic regression improved steadily with more data but plateaued below the boosting models. That told me a linear decision boundary was not the main bottleneck - data volume was not the issue, capacity was.
+
+![Random forest learning curve (Figure 8a)](figures/fig_08_random_forest_learning_curve.png){#fig-lc-rf width=90%}
+
+![LightGBM learning curve (Figure 8b)](figures/fig_08_lightgbm_learning_curve.png){#fig-lc-lgbm width=90%}
+
+Random forest and LightGBM both benefited from additional rows, with LightGBM holding a consistent edge at every training size. That reinforced my plan to focus on boosting for the final selection.
+
 ## Experiment 1 - Logistic regression
 
 I always start with a linear baseline. Logistic regression is interpretable and fast, and it sets a floor for more complex models.

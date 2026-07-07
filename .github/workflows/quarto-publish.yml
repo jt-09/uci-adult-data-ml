@@ -43,6 +43,8 @@ jobs:
             test -s "_book/$f"
           done
           find _book -name 'fig_01_missingness.png' | grep -q .
+          test -f _book/assets/main.pdf
+          test -s _book/assets/main.pdf
           echo "Smoke test passed."
 
       - name: Deploy to gh-pages

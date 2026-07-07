@@ -16,4 +16,4 @@ bibliography: ../reports/references.bib
 - Ke, G., et al. (2017). LightGBM: A Highly Efficient Gradient Boosting Decision Tree. *NeurIPS*.
 - Lundberg, S. M., & Lee, S.-I. (2017). A Unified Approach to Interpreting Model Predictions. *NeurIPS* (SHAP).
 
-Full BibTeX entries: [`reports/references.bib`](../reports/references.bib).
+Full BibTeX entries: [reports/references.bib](https://github.com/jt-09/uci-adult-data-ml/blob/main/reports/references.bib).

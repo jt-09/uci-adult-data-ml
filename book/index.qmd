@@ -8,7 +8,7 @@ title: "Preface"
 
 This book is a **narrative rewrite** of my end-to-end machine learning study on the [UCI Adult (Census Income)](https://archive.ics.uci.edu/ml/datasets/adult) dataset. I built a reproducible pipeline, compared classical and neural models, evaluated a final LightGBM classifier on a held-out test set, and then asked the harder questions: what features drive predictions, and do error rates differ across demographic subgroups?
 
-The [original academic report](../reports/report.md) and [PDF](../reports/overleaf/main.pdf) are **unchanged**. This site reuses the same exported figures and tables - no pipeline rerun required to read it.
+The [original academic report](https://github.com/jt-09/uci-adult-data-ml/blob/main/reports/report.md) and [PDF](assets/main.pdf) ([release copy](https://github.com/jt-09/uci-adult-data-ml/releases/download/v1.0/main.pdf)) are **unchanged**. This site reuses the same exported figures and tables - no pipeline rerun required to read it.
 
 ## Results at a glance
 

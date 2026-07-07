@@ -34,17 +34,17 @@ ROC-AUC (**0.930**) indicated strong ranking ability; PR-AUC (**0.836**) reflect
 
 ### Permutation importance
 
-I shuffled each encoded feature and measured the drop in macro F1. The largest decreases aligned with domain expectations: marital/relationship, education, and age-related signals typically dominate Adult predictions - though feature names here are post-encoding indices from the fitted `ColumnTransformer`.
+I shuffled each raw input column and measured the drop in macro F1. The largest decreases landed on **marital-status**, **capital-gain**, **education-num**, and **age** - exactly the kind of signals I expected after EDA.
 
 ![Permutation importance on test data (Figure 13)](figures/fig_13_permutation_importance.png){#fig-perm width=90%}
 
 ### SHAP values
 
-The SHAP summary plot showed global attribution patterns for the tree model on transformed features. Interpretation stays at the encoded-input level; mapping back to raw categorical levels would require extracting feature names from the fitted pipeline.
+The SHAP summary plot now uses human-readable feature labels (for example `education: Bachelors`, `marital-status: Married-civ-spouse`) instead of opaque encoded indices. The global pattern was clear: education, marital status, occupation, and age-related splits dominated the tree model's decisions.
 
 ![SHAP summary for LightGBM (Figure 14)](figures/fig_14_shap_summary.png){#fig-shap width=90%}
 
-What struck me was how concentrated the importance was - a handful of encoded columns carried most of the signal, consistent with the education and occupation patterns I saw in EDA.
+What struck me was how concentrated the importance was - a handful of columns carried most of the signal, consistent with the education and occupation patterns I saw in EDA.
 
 ### Representative errors
 
@@ -85,9 +85,23 @@ Recall for **Black** individuals (**0.496**) is lower than for **White** individ
 
 ### Intersectional groups
 
-Sex-race intersections tell a finer-grained story. Disparities are visible across cells (e.g. Female|Black vs Male|White recall); cells with small support require extra caution. Full metrics: `reports/tables/table_fairness_intersectional.csv`.
+Sex-race intersections tell a finer-grained story. Disparities are visible across cells (e.g. Female|Black vs Male|White recall); cells with small support require extra caution. Full metrics: [intersectional table](https://github.com/jt-09/uci-adult-data-ml/blob/main/reports/tables/table_fairness_intersectional.csv).
 
 Strong overall F1 and unequal subgroup recall can coexist. Fairness auditing is separate from optimising a single score.
+
+## Fairness constraints I did not tune (and why)
+
+Strong test macro F1 did not mean the model treated groups equally. I measured recall gaps, but I did **not** apply fairness constraints during training. That was deliberate: constraint methods (demographic parity, equalized odds, equal opportunity) need a validation set for threshold or model selection, and this project held out a single test set for one final evaluation.
+
+Demographic parity would ask for similar positive prediction rates across groups, but the dataset itself has very different base rates of high income by sex and race. Equalized odds would push false positive and false negative rates to align across groups - a reasonable production goal, but one that can trade off against overall accuracy. I documented these definitions and the tradeoffs in the [fairness constraints essay](https://github.com/jt-09/uci-adult-data-ml/blob/main/docs/fairness_constraints_explained.md).
+
+In a deployment setting, I would add a validation fold, define tolerances with stakeholders, and monitor subgroup metrics over time rather than reporting a single aggregate F1 once.
+
+## What would it take to use this in 2026?
+
+The Adult dataset is not a snapshot of today's labour market. It reflects 1994 census extraction patterns, a fixed \$50K income band without inflation adjustment, and feature definitions from a different economic era. Remote work, gig employment, credential inflation, and shifting immigration patterns all mean the joint distribution of features and labels would differ materially if we collected similar data today.
+
+Using this model for hiring, credit, or benefits screening in 2026 would require new representative data, inflation-adjusted or multi-band labels, modern feature schemas, subgroup monitoring in production, and legal review - not a redeploy of a 1994-era classifier with 0.818 macro F1. I wrote a longer essay on [external validity and a revalidation protocol](https://github.com/jt-09/uci-adult-data-ml/blob/main/docs/external_validity_2026.md) for anyone evaluating whether this benchmark generalizes beyond its historical context.
 
 ## Calibration - can I trust the probabilities?
 
@@ -138,4 +152,4 @@ I would answer the main research question in the affirmative for **predictive st
 - **Neural models:** The PyTorch embedding MLP was not fully optimised; underperformance is not a definitive ceiling for neural tabular methods.
 :::
 
-The [original academic report](../reports/report.md) and [PDF](../reports/overleaf/main.pdf) remain unchanged alongside this narrative rewrite.
+The [original academic report](https://github.com/jt-09/uci-adult-data-ml/blob/main/reports/report.md) and [PDF](assets/main.pdf) remain unchanged alongside this narrative rewrite.
