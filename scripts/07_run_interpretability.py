@@ -47,6 +47,9 @@ def main():
 
     shap_path = run_shap_analysis(model, X_test, paths["shap"])
     if shap_path:
+        fig14 = paths["figures"] / "fig_14_shap_summary.png"
+        fig14.write_bytes(shap_path.read_bytes())
+        tag_artifact(fig14, ["INT-002"])
         tag_artifact(shap_path, ["INT-002"])
 
     errors = get_representative_errors(test, y_test.values, y_pred)
