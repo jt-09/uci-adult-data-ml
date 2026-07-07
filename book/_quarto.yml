@@ -18,11 +18,11 @@ book:
     - chapter-03-modeling.qmd
     - chapter-04-under-the-hood.qmd
     - references.qmd
-  repo-url: https://github.com/jaythakkar/uci-adult-data-ml
+  repo-url: https://github.com/jt-09/uci-adult-data-ml
   repo-actions: [edit, issue]
 
 website:
-  site-url: https://jaythakkar.github.io/uci-adult-data-ml/
+  site-url: https://jt-09.github.io/uci-adult-data-ml/
   navbar:
     left:
       - href: index.qmd
@@ -37,7 +37,7 @@ website:
         text: "Ch 4: Reflection"
     right:
       - icon: github
-        href: https://github.com/jaythakkar/uci-adult-data-ml
+        href: https://github.com/jt-09/uci-adult-data-ml
   reader-mode: true
   page-footer:
     center: "Built with Quarto | Source ML pipeline unchanged"

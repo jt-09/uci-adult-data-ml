@@ -32,7 +32,7 @@ The [original academic report](../reports/report.md) and [PDF](../reports/overle
 
 ## Reproducing the underlying work
 
-Source code, configs, and pipeline scripts live in the [GitHub repository](https://github.com/jaythakkar/uci-adult-data-ml). If you want to regenerate artifacts from scratch, start with the README quick-start - this book only **points at** the exported results.
+Source code, configs, and pipeline scripts live in the [GitHub repository](https://github.com/jt-09/uci-adult-data-ml). If you want to regenerate artifacts from scratch, start with the README quick-start - this book only **points at** the exported results.
 
 **Rule I followed throughout:** never tune or select models on the held-out test set. Selection uses 5-fold CV macro F1 on the training split only.
 

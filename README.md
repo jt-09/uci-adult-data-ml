@@ -1,7 +1,7 @@
 # Predicting High Income from Census Attributes
 
 [![CI](https://github.com/jaythakkar/uci-adult-data-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/jaythakkar/uci-adult-data-ml/actions/workflows/ci.yml)
-[![Quarto Book](https://github.com/jaythakkar/uci-adult-data-ml/actions/workflows/quarto-publish.yml/badge.svg)](https://jaythakkar.github.io/uci-adult-data-ml/)
+[![Quarto Book](https://github.com/jt-09/uci-adult-data-ml/actions/workflows/quarto-publish.yml/badge.svg)](https://jt-09.github.io/uci-adult-data-ml/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -21,7 +21,7 @@ End-to-end tabular ML project on the [UCI Adult (Census Income)](https://archive
 
 Full write-up: [`reports/report.md`](reports/report.md). PDF: [`reports/overleaf/main.pdf`](reports/overleaf/main.pdf).
 
-**Interactive book (developer log):** [Quarto site on GitHub Pages](https://jaythakkar.github.io/uci-adult-data-ml/) - narrative rewrite in [`book/`](book/); original report sources unchanged.
+**Interactive book (developer log):** [Quarto site on GitHub Pages](https://jt-09.github.io/uci-adult-data-ml/) - narrative rewrite in [`book/`](book/); original report sources unchanged.
 
 Sample figures ship in `reports/figures/` (regenerate with the pipeline below if needed).
 
