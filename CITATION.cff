@@ -4,7 +4,7 @@ message: "If you use this repository, please cite it and the UCI Adult dataset."
 authors:
   - family-names: Thakkar
     given-names: Jay
-repository-code: "https://github.com/jaythakkar/uci-adult-data-ml"
+repository-code: "https://github.com/jt-09/uci-adult-data-ml"
 license: MIT
 version: 0.1.0
 date-released: 2026-06-05

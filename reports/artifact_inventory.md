@@ -9,6 +9,9 @@
 | Figure 4 | `figures/fig_04_numeric_by_target.png` | EDA-001 | 4 |
 | Figure 5 | `figures/fig_05_categorical_rates.png` | EDA-001 | 4 |
 | Figure 6 | `figures/fig_06_correlation.png` | EDA-001 | 4 |
+| Figure 7 | `figures/fig_07_logistic_learning_curve.png` | MODEL-001 | 6 |
+| Figure 8a | `figures/fig_08_random_forest_learning_curve.png` | MODEL-003 | 6 |
+| Figure 8b | `figures/fig_08_lightgbm_learning_curve.png` | MODEL-004 | 6 |
 | Figure 9 | `figures/fig_09_mlp_training_curve.png` | MODEL-005 | 11 |
 | Figure 10 | `figures/fig_10_cross_model_comparison.png` | EVAL-001 | 12 |
 | Figure 11 | `figures/fig_11_confusion_matrix.png` | EVAL-001 | 13 |
@@ -33,6 +36,6 @@
 | Table 17 | `tables/table_17_extension.csv` | EXT-001, EXT-002 | 17 |
 | Intersectional | `tables/table_fairness_intersectional.csv` | FAIR-003 | Appendix |
 
-**Note:** Per-model tuning curve figures (repo plan Figures 7–10) were not generated; CV scores and hyperparameters are reported via Table 11 and `results/cv_results/tuning_results.json`.
+**Note:** Per-model tuning curve figures (Figures 7-8) are produced by `scripts/05b_learning_curves.py` after tuning.
 
 **Artifact gate:** PASS (all required files present as of inventory build).

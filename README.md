@@ -1,11 +1,13 @@
 # Predicting High Income from Census Attributes
 
-[![CI](https://github.com/jaythakkar/uci-adult-data-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/jaythakkar/uci-adult-data-ml/actions/workflows/ci.yml)
+[![CI](https://github.com/jt-09/uci-adult-data-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/jt-09/uci-adult-data-ml/actions/workflows/ci.yml)
 [![Quarto Book](https://github.com/jt-09/uci-adult-data-ml/actions/workflows/quarto-publish.yml/badge.svg)](https://jt-09.github.io/uci-adult-data-ml/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 End-to-end tabular ML project on the [UCI Adult (Census Income)](https://archive.ics.uci.edu/ml/datasets/adult) dataset: data cleaning, exploratory analysis, model comparison, held-out evaluation, interpretability, subgroup fairness checks, and calibration.
+
+**Portfolio links:** [Developer log (Quarto book)](https://jt-09.github.io/uci-adult-data-ml/) | [PDF report](https://github.com/jt-09/uci-adult-data-ml/releases/download/v1.0/main.pdf) | [RESULTS.md](RESULTS.md)
 
 **Question:** Can we predict whether annual income exceeds $50K from census-style features, and what do model choice, preprocessing, and fairness diagnostics tell us about that prediction?
 
@@ -19,9 +21,26 @@ End-to-end tabular ML project on the [UCI Adult (Census Income)](https://archive
 | Test Brier score | 0.087 |
 | Positive class rate | 23.9% (imbalanced) |
 
-Full write-up: [`reports/report.md`](reports/report.md). PDF: [`reports/overleaf/main.pdf`](reports/overleaf/main.pdf).
+## Skills demonstrated
+
+| Area | Evidence |
+|------|----------|
+| Python / sklearn pipelines | `src/adult_income_ml/pipelines.py`, leakage-safe CV |
+| Gradient boosting (LightGBM) | `scripts/05_tune_models.py`, test macro F1 0.818 |
+| Imbalanced classification | Macro F1, PR-AUC, class-weight tuning |
+| Interpretability (SHAP, permutation) | `scripts/07_run_interpretability.py`, Figures 13-14 |
+| Fairness auditing | Subgroup FPR/FNR/recall, intersectional tables |
+| Probability calibration | Brier score, reliability curve |
+| Reproducible research | Numbered scripts, config YAML, Makefile |
+| Technical writing | Report, PDF, Quarto developer log |
+| CI/CD | pytest workflow + Quarto GitHub Pages deploy |
+| Interactive demo | `demo/app.py` (Gradio) |
+
+Full write-up: [`reports/report.md`](reports/report.md). PDF: [`reports/overleaf/main.pdf`](reports/overleaf/main.pdf). Metrics snapshot: [`RESULTS.md`](RESULTS.md).
 
 **Interactive book (developer log):** [Quarto site on GitHub Pages](https://jt-09.github.io/uci-adult-data-ml/) - narrative rewrite in [`book/`](book/); original report sources unchanged.
+
+Extended reading: [fairness constraints explained](docs/fairness_constraints_explained.md) | [2026 external validity](docs/external_validity_2026.md)
 
 Sample figures ship in `reports/figures/` (regenerate with the pipeline below if needed).
 
@@ -30,7 +49,7 @@ Sample figures ship in `reports/figures/` (regenerate with the pipeline below if
 **Requirements:** Python 3.10+, network access for the UCI fetch.
 
 ```powershell
-git clone https://github.com/jaythakkar/uci-adult-data-ml.git
+git clone https://github.com/jt-09/uci-adult-data-ml.git
 cd uci-adult-data-ml
 
 python -m venv .venv
@@ -83,6 +102,17 @@ python scripts/12_verify_report_numbers.py
 
 See [`docs/reproduction.md`](docs/reproduction.md) for figure-to-script mapping, runtime notes, and troubleshooting.
 
+## Try the demo
+
+After tuning the model:
+
+```bash
+pip install -r requirements-demo.txt
+make demo
+```
+
+Opens a Gradio UI for single-row predictions. See [`demo/README.md`](demo/README.md).
+
 ## Pipeline commands
 
 | Command | Script | Notes |
@@ -92,7 +122,7 @@ See [`docs/reproduction.md`](docs/reproduction.md) for figure-to-script mapping,
 | `make build` | `02_build_dataset.py` | Cleaning + split indices |
 | `make eda` | `03_run_eda.py` | Figures 1-6 |
 | `make train` | `04_train_baselines.py` | Baseline fits |
-| `make tune` | `05_tune_models.py` | CV search, saves final model |
+| `make tune` | `05_tune_models.py` + `05b_learning_curves.py` | CV search + learning curves |
 | `make evaluate` | `06_evaluate_final.py` | Test metrics, figures 10-12 |
 | `make interpret` | `07_run_interpretability.py` | Permutation + SHAP |
 | `make fairness` | `08_run_fairness.py` | Subgroup metrics |
