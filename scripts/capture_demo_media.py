@@ -33,9 +33,7 @@ def _scroll_to_top(page: Page) -> None:
 
 
 def _wait_for_results(page: Page, timeout_ms: int = 45_000) -> None:
-    page.get_by_text("Predicted income", exact=False).wait_for(
-        state="visible", timeout=timeout_ms
-    )
+    page.get_by_text("Predicted income", exact=False).wait_for(state="visible", timeout=timeout_ms)
     page.get_by_text("Top contributing features", exact=False).wait_for(
         state="visible", timeout=timeout_ms
     )
