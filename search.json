@@ -1,0 +1,382 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Predicting High Income from Census Attributes",
+    "section": "",
+    "text": "Predicting High Income from Census Attributes\nA developer log on tabular ML, fairness, and interpretability\nThis book is a narrative rewrite of my end-to-end machine learning study on the UCI Adult (Census Income) dataset. I built a reproducible pipeline, compared classical and neural models, evaluated a final LightGBM classifier on a held-out test set, and then asked the harder questions: what features drive predictions, and do error rates differ across demographic subgroups?\nThe original academic report and PDF (release copy) are unchanged. This site reuses the same exported figures and tables - no pipeline rerun required to read it.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Preface</span>"
+    ]
+  },
+  {
+    "objectID": "index.html#results-at-a-glance",
+    "href": "index.html#results-at-a-glance",
+    "title": "Predicting High Income from Census Attributes",
+    "section": "0.1 Results at a glance",
+    "text": "0.1 Results at a glance\n\n\n\nItem\nValue\n\n\n\n\nSelected model\nLightGBM (tuned on train CV)\n\n\nCV macro F1 (train only)\n0.815\n\n\nTest macro F1\n0.818\n\n\nTest ROC-AUC\n0.930\n\n\nTest Brier score\n0.087\n\n\nPositive class rate\n23.9% (imbalanced)",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Preface</span>"
+    ]
+  },
+  {
+    "objectID": "index.html#how-to-read-this-book",
+    "href": "index.html#how-to-read-this-book",
+    "title": "Predicting High Income from Census Attributes",
+    "section": "0.2 How to read this book",
+    "text": "0.2 How to read this book\n\n\n\nChapter\nWhat I cover\n\n\n\n\nCh 1: Setup\nProblem framing, data fetch, cleaning hurdles\n\n\nCh 2: EDA\nDistributions, imbalance, sensitive-attribute base rates\n\n\nCh 3: Modeling\nBaselines -&gt; boosting -&gt; MLP experiments -&gt; model selection\n\n\nCh 4: Reflection\nTest metrics, SHAP, fairness, calibration, conclusions",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Preface</span>"
+    ]
+  },
+  {
+    "objectID": "index.html#reproducing-the-underlying-work",
+    "href": "index.html#reproducing-the-underlying-work",
+    "title": "Predicting High Income from Census Attributes",
+    "section": "0.3 Reproducing the underlying work",
+    "text": "0.3 Reproducing the underlying work\nSource code, configs, and pipeline scripts live in the GitHub repository. If you want to regenerate artifacts from scratch, start with the README quick-start - this book only points at the exported results.\nRule I followed throughout: never tune or select models on the held-out test set. Selection uses 5-fold CV macro F1 on the training split only.\nLet’s start with why I picked this dataset and what the raw census rows looked like after cleaning.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Preface</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-01-setup.html",
+    "href": "chapter-01-setup.html",
+    "title": "2  The Setup & The Data",
+    "section": "",
+    "text": "2.1 Why this dataset, why this question\nIncome classification from census variables is a classic benchmark, but I was less interested in beating a leaderboard and more interested in walking through the full lifecycle: cleaning, EDA, model comparison, held-out evaluation, interpretability, and fairness checks. The label is simple - does annual income exceed $50,000? - but the path from raw CSV to a defensible conclusion is not.\nMy main question, in plain language: how well can I predict high income from demographic, education, employment, and financial attributes, and what do preprocessing choices, model family, calibration, and subgroup diagnostics tell me about how much to trust the result?\nI set four concrete goals along the way:",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>The Setup & The Data</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-01-setup.html#why-this-dataset-why-this-question",
+    "href": "chapter-01-setup.html#why-this-dataset-why-this-question",
+    "title": "2  The Setup & The Data",
+    "section": "",
+    "text": "Build a leakage-aware, reproducible binary classification dataset.\nCompare classical models and neural MLP variants under the same split and metric protocol.\nCheck whether stronger predictive performance trades off against interpretability or subgroup disparity.\nProduce an evidence-first write-up where every claim points to a figure or table.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>The Setup & The Data</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-01-setup.html#how-i-would-pick-a-winner",
+    "href": "chapter-01-setup.html#how-i-would-pick-a-winner",
+    "title": "2  The Setup & The Data",
+    "section": "2.2 How I would pick a winner",
+    "text": "2.2 How I would pick a winner\nBefore touching any models, I decided on the selection rule: mean 5-fold cross-validated macro F1 on the training split only. The held-out test set would be used once, at the end, for the selected model. Hyperparameters would come from randomized search on training data. The test set would never influence selection or tuning - that was non-negotiable.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>The Setup & The Data</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-01-setup.html#fetching-and-defining-the-task",
+    "href": "chapter-01-setup.html#fetching-and-defining-the-task",
+    "title": "2  The Setup & The Data",
+    "section": "2.3 Fetching and defining the task",
+    "text": "2.3 Fetching and defining the task\nI fetched the data reproducibly from the UCI ML Repository (id=2) via ucimlrepo. The prediction task is binary: income &lt;= $50K (label 0) vs income &gt; $50K (label 1).\nCleaning was where I hit my first real friction. The raw files use ? as a missing-value token, not proper NA values. I replaced those, dropped duplicates, and encoded the target as 0/1. After cleaning, the analysis dataset contained 48,813 rows and 15 columns.\n\n\n\nTable 2.1: Dataset summary after cleaning\n\n\n\n\n\nMetric\nValue\n\n\n\n\nRows\n48,813\n\n\nColumns\n15\n\n\nTarget positive rate\n23.9%\n\n\n\n\n\n\nThe overall high-income (positive class) rate is 23.9% - substantial class imbalance that would shape every metric choice later.\n\n\n\nTable 2.2: Key cleaning steps applied to the raw Adult data\n\n\n\n\n\nStep\nDetail\n\n\n\n\nMissing token\n? replaced with NA\n\n\nDuplicates\n29 duplicate rows removed\n\n\nTarget encoding\n&lt;=50K -&gt; 0, &gt;50K -&gt; 1",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>The Setup & The Data</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-01-setup.html#first-look-at-missingness",
+    "href": "chapter-01-setup.html#first-look-at-missingness",
+    "title": "2  The Setup & The Data",
+    "section": "2.4 First look at missingness",
+    "text": "2.4 First look at missingness\nOnce the basics were in place, I audited missingness column by column. Several categorical fields still had gaps after replacing ?, which told me imputation strategy would matter downstream.\n\n\n\n\n\n\nFigure 2.1: Missing values by column (Figure 1)\n\n\n\nSeveral categorical fields show missing values after the ? -&gt; NA conversion. I made a mental note: mode imputation inside cross-validation folds, never fit on test data.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>The Setup & The Data</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-01-setup.html#a-quick-caveat-before-going-further",
+    "href": "chapter-01-setup.html#a-quick-caveat-before-going-further",
+    "title": "2  The Setup & The Data",
+    "section": "2.5 A quick caveat before going further",
+    "text": "2.5 A quick caveat before going further\nThe Adult dataset reflects a specific U.S. census-era survey population. Labels are coarse (two income bands), and features may encode historical social structure. Everything I report describes associative patterns in this dataset only - I am not claiming the model generalizes to other populations or time periods. A longer discussion of what would be needed for 2026-era use is in Chapter 4 and the external validity essay.\nWith the data loaded and cleaned, the next step was to actually look at what the census rows contained before training anything.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>The Setup & The Data</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-02-exploring.html",
+    "href": "chapter-02-exploring.html",
+    "title": "3  Exploring the Census",
+    "section": "",
+    "text": "3.1 What I kept in the feature set\nI retained fourteen input features: six numeric (age, fnlwgt, education-num, capital-gain, capital-loss, hours-per-week) and eight categorical (workclass, education, marital-status, occupation, relationship, race, sex, native-country). A sample of the feature dictionary is below; the full table lives in reports/tables/table_02_feature_dictionary.csv.\nI flagged sex and race as sensitive attributes for fairness auditing later. They stayed in the primary modeling pipeline; I tested removal separately in Chapter 4.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Exploring the Census</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-02-exploring.html#what-i-kept-in-the-feature-set",
+    "href": "chapter-02-exploring.html#what-i-kept-in-the-feature-set",
+    "title": "3  Exploring the Census",
+    "section": "",
+    "text": "Table 3.1: Feature dictionary - numeric vs categorical, sensitive flags\n\n\n\n\n\nFeature\nType\nSensitive\n\n\n\n\nage\nnumeric\nno\n\n\nfnlwgt\nnumeric\nno\n\n\neducation-num\nnumeric\nno\n\n\ncapital-gain\nnumeric\nno\n\n\ncapital-loss\nnumeric\nno\n\n\nhours-per-week\nnumeric\nno\n\n\nworkclass\ncategorical\nno\n\n\neducation\ncategorical\nno\n\n\nmarital-status\ncategorical\nno\n\n\noccupation\ncategorical\nno\n\n\nrelationship\ncategorical\nno\n\n\nrace\ncategorical\nyes\n\n\nsex\ncategorical\nyes\n\n\nnative-country\ncategorical\nno",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Exploring the Census</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-02-exploring.html#numeric-separation-between-income-classes",
+    "href": "chapter-02-exploring.html#numeric-separation-between-income-classes",
+    "title": "3  Exploring the Census",
+    "section": "3.2 Numeric separation between income classes",
+    "text": "3.2 Numeric separation between income classes\nI stratified numeric distributions by the income label to see which continuous fields actually moved. Age, education-num, and hours-per-week showed visible separation between classes. Capital-gain was sparse but jumped out as informative for high earners when it was non-zero.\n\n\n\n\n\n\nFigure 3.1: Numeric feature distributions stratified by income label (Figure 4)\n\n\n\nThat pattern matched my intuition: income in this dataset correlates with experience, education level, and work intensity. I did not drop any numeric field at this stage.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Exploring the Census</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-02-exploring.html#education-and-correlation-structure",
+    "href": "chapter-02-exploring.html#education-and-correlation-structure",
+    "title": "3  Exploring the Census",
+    "section": "3.3 Education and correlation structure",
+    "text": "3.3 Education and correlation structure\nNext I wanted to see the impact of education, so I plotted the high-income rate by education level. The result was interesting because Doctorate and Prof-school levels heavily dominated, as shown in Figure 3.2. Tree models would almost certainly lean on education-related splits.\n\n\n\n\n\n\nFigure 3.2: Income rate by education level (Figure 5)\n\n\n\nI also checked numeric correlation. Features showed moderate correlation, but I did not drop anything solely for collinearity - tree-based models handle redundancy, and I wanted the same feature set across model families for a fair comparison.\n\n\n\n\n\n\nFigure 3.3: Numeric correlation heatmap (Figure 6)",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Exploring the Census</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-02-exploring.html#feature-selection---or-the-lack-of-it",
+    "href": "chapter-02-exploring.html#feature-selection---or-the-lack-of-it",
+    "title": "3  Exploring the Census",
+    "section": "3.4 Feature selection - or the lack of it",
+    "text": "3.4 Feature selection - or the lack of it\nI deliberately skipped a separate univariate filter beyond EDA. All fourteen inputs feed a unified ColumnTransformer: median/mode imputation, standardisation for numeric fields, one-hot encoding for categoricals. Keeping one consistent pipeline made cross-validation leakage-safe and model comparison cleaner.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Exploring the Census</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-02-exploring.html#class-imbalance---the-number-that-changed-my-metrics",
+    "href": "chapter-02-exploring.html#class-imbalance---the-number-that-changed-my-metrics",
+    "title": "3  Exploring the Census",
+    "section": "3.5 Class imbalance - the number that changed my metrics",
+    "text": "3.5 Class imbalance - the number that changed my metrics\nOnly 23.9% of records are positive (income &gt; $50K). At this point I realised accuracy alone would be misleading: a naive majority-class classifier could look good while failing high earners. I committed to reporting macro F1 and balanced accuracy alongside accuracy for the rest of the project.\n\n\n\n\n\n\nFigure 3.4: Target class distribution (Figure 2)",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Exploring the Census</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-02-exploring.html#sensitive-attributes-and-base-rate-differences",
+    "href": "chapter-02-exploring.html#sensitive-attributes-and-base-rate-differences",
+    "title": "3  Exploring the Census",
+    "section": "3.6 Sensitive attributes and base-rate differences",
+    "text": "3.6 Sensitive attributes and base-rate differences\nI then looked at high-income rates by sex and race. The gaps were obvious - different groups enter the dataset with different base rates of earning above $50K. That does not tell me a model will be unfair, but it warned me to run subgroup diagnostics after training.\n\n\n\n\n\n\nFigure 3.5: Income rate by sex (Figure 3a)\n\n\n\n\n\n\n\n\n\nFigure 3.6: Income rate by race (Figure 3b)\n\n\n\nImbalance plus group rate differences foreshadowed everything in the back half of this project: macro-averaged metrics during tuning, and explicit fairness tables on the test set after selection.\nEDA answered what was in the data. The next step was building a leakage-safe pipeline to learn from it.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Exploring the Census</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-03-modeling.html",
+    "href": "chapter-03-modeling.html",
+    "title": "4  The Modeling Journey",
+    "section": "",
+    "text": "4.1 Building a leakage-safe foundation",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>The Modeling Journey</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-03-modeling.html#building-a-leakage-safe-foundation",
+    "href": "chapter-03-modeling.html#building-a-leakage-safe-foundation",
+    "title": "4  The Modeling Journey",
+    "section": "",
+    "text": "4.1.1 Train/test split\nI used a stratified 80/20 split: 39,050 training and 9,763 test records. Positive rates aligned at 23.9% in both splits, which was exactly what I wanted.\n\n\n\nTable 4.1: Stratified train/test split summary\n\n\n\n\n\nSplit\nn\nPositive rate\n\n\n\n\nTrain\n39,050\n0.239\n\n\nTest\n9,763\n0.239\n\n\n\n\n\n\n\n\n4.1.2 Preprocessing inside the pipeline\nPreprocessing lives in src/adult_income_ml/pipelines.py:\n\nNumeric: median imputation + standardisation\nCategorical: mode imputation + one-hot encoding (handle_unknown=\"ignore\")\n\nThe preprocessor is fitted only on training folds inside each CV split (or on the full training set for the final fit). The test set never touches imputation statistics, scaling, or hyperparameter selection. That discipline sounds tedious until you have seen leakage inflate scores once.\n\n\n4.1.3 Tuning protocol\n\nSearch: RandomizedSearchCV (up to 20 iterations per model)\nCV: 5 folds on training data\nPrimary scoring: macro F1\nCandidates: dummy baseline, logistic regression, decision tree, random forest, HistGradientBoosting, XGBoost, LightGBM, sklearn MLP, PyTorch embedding MLP\n\nPer-model learning curves were not exported for every family; CV scores and best hyperparameters carry the comparison.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>The Modeling Journey</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-03-modeling.html#did-more-data-help-learning-curves",
+    "href": "chapter-03-modeling.html#did-more-data-help-learning-curves",
+    "title": "4  The Modeling Journey",
+    "section": "4.2 Did more data help? Learning curves",
+    "text": "4.2 Did more data help? Learning curves\nBefore comparing final CV scores, I wanted to see whether models were still gaining from more training rows or starting to plateau. I plotted learning curves on the training split only (macro F1 vs training set size, 5-fold CV).\n\n\n\n\n\n\nFigure 4.1: Logistic regression learning curve (Figure 7)\n\n\n\nLogistic regression improved steadily with more data but plateaued below the boosting models. That told me a linear decision boundary was not the main bottleneck - data volume was not the issue, capacity was.\n\n\n\n\n\n\nFigure 4.2: Random forest learning curve (Figure 8a)\n\n\n\n\n\n\n\n\n\nFigure 4.3: LightGBM learning curve (Figure 8b)\n\n\n\nRandom forest and LightGBM both benefited from additional rows, with LightGBM holding a consistent edge at every training size. That reinforced my plan to focus on boosting for the final selection.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>The Modeling Journey</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-03-modeling.html#experiment-1---logistic-regression",
+    "href": "chapter-03-modeling.html#experiment-1---logistic-regression",
+    "title": "4  The Modeling Journey",
+    "section": "4.3 Experiment 1 - Logistic regression",
+    "text": "4.3 Experiment 1 - Logistic regression\nI always start with a linear baseline. Logistic regression is interpretable and fast, and it sets a floor for more complex models.\n\n\n\nMetric\nValue\n\n\n\n\nCV macro F1 (train only)\n0.780\n\n\n\nBest hyperparameters: C=1.0, class_weight=None, max_iter=1000. Respectable, but clearly below what nonlinear ensembles would deliver.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>The Modeling Journey</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-03-modeling.html#experiment-2---decision-tree",
+    "href": "chapter-03-modeling.html#experiment-2---decision-tree",
+    "title": "4  The Modeling Journey",
+    "section": "4.4 Experiment 2 - Decision tree",
+    "text": "4.4 Experiment 2 - Decision tree\nA single tree trades a bit of interpretability structure for nonlinear splits.\n\n\n\nMetric\nValue\n\n\n\n\nCV macro F1 (train only)\n0.787\n\n\n\nBest settings: max_depth=10, min_samples_leaf=10. A small bump over logistic regression, still not competitive with ensembles.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>The Modeling Journey</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-03-modeling.html#experiment-3---random-forest",
+    "href": "chapter-03-modeling.html#experiment-3---random-forest",
+    "title": "4  The Modeling Journey",
+    "section": "4.5 Experiment 3 - Random forest",
+    "text": "4.5 Experiment 3 - Random forest\nBagging many trees usually stabilises variance on tabular data.\n\n\n\nMetric\nValue\n\n\n\n\nCV macro F1 (train only)\n0.793\n\n\n\nBest settings: n_estimators=200, max_depth=None, min_samples_leaf=5. A strong classical baseline - but boosting was about to pull ahead.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>The Modeling Journey</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-03-modeling.html#experiment-4---gradient-boosting-where-things-clicked",
+    "href": "chapter-03-modeling.html#experiment-4---gradient-boosting-where-things-clicked",
+    "title": "4  The Modeling Journey",
+    "section": "4.6 Experiment 4 - Gradient boosting (where things clicked)",
+    "text": "4.6 Experiment 4 - Gradient boosting (where things clicked)\nI tuned three boosting implementations. This is where the project turned a corner.\n\n\n\nModel\nCV macro F1 (train only)\n\n\n\n\nHistGradientBoosting\n0.814\n\n\nXGBoost\n0.814\n\n\nLightGBM\n0.815\n\n\n\nLightGBM achieved the highest cross-validated macro F1 and became my selected model. Best parameters: n_estimators=200, max_depth=5, learning_rate=0.1, num_leaves=31.\nHistGradientBoosting and XGBoost were effectively tied behind it; boosting families clearly outperformed linear and single-tree models on this task.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>The Modeling Journey</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-03-modeling.html#experiment-5---neural-networks-worth-trying-not-winning",
+    "href": "chapter-03-modeling.html#experiment-5---neural-networks-worth-trying-not-winning",
+    "title": "4  The Modeling Journey",
+    "section": "4.7 Experiment 5 - Neural networks (worth trying, not winning)",
+    "text": "4.7 Experiment 5 - Neural networks (worth trying, not winning)\nI ran two neural approaches on the held-out test set after separate training - reported for comparison, not for selection.\n\n\n\nTable 4.2: Neural model results on the held-out test set\n\n\n\n\n\nModel\nTest macro F1\nTest ROC-AUC\n\n\n\n\nsklearn MLP (one-hot pipeline)\n0.791\n0.914\n\n\nPyTorch embedding MLP\n0.559\n0.588\n\n\n\n\n\n\nThe sklearn MLP was competitive with classical models (test macro F1 0.791) but still below the LightGBM I would evaluate properly in Chapter 4. The PyTorch embedding MLP underperformed substantially (test macro F1 0.559) - likely limited tuning, class imbalance, and tabular structure favouring trees.\n\n\n\n\n\n\nFigure 4.4: PyTorch embedding MLP training loss by epoch (Figure 9)\n\n\n\nThe training curve flattened without delivering test performance. I filed that under “interesting negative result” rather than “pursue further in this repo.”",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>The Modeling Journey</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-03-modeling.html#cross-model-comparison---making-the-call",
+    "href": "chapter-03-modeling.html#cross-model-comparison---making-the-call",
+    "title": "4  The Modeling Journey",
+    "section": "4.8 Cross-model comparison - making the call",
+    "text": "4.8 Cross-model comparison - making the call\nFigure 10 summarises CV macro F1 on the training split for all tuned classical models. LightGBM leads at 0.815, followed by XGBoost and HistGradientBoosting (~0.814). Selection is based on this metric only - not test performance.\n\n\n\n\n\n\nFigure 4.5: Cross-validated macro F1 by model family (Figure 10)\n\n\n\n\n\n\nTable 4.3: Cross-validated macro F1 by model (training split only)\n\n\n\n\n\nModel\nCV macro F1\n\n\n\n\nlogistic_regression\n0.780\n\n\ndecision_tree\n0.787\n\n\nrandom_forest\n0.793\n\n\nhist_gradient_boosting\n0.814\n\n\nxgboost\n0.814\n\n\nlightgbm\n0.815\n\n\n\n\n\n\nAt this point I had a winner on paper. The real question was whether 0.815 CV macro F1 would hold on the single held-out test pass - and what I would find when I looked under the hood.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>The Modeling Journey</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-04-under-the-hood.html",
+    "href": "chapter-04-under-the-hood.html",
+    "title": "5  Under the Hood & Final Thoughts",
+    "section": "",
+    "text": "5.1 Final evaluation - one pass on the test set\nI evaluated the selected LightGBM pipeline once on the held-out test set. Test macro F1 (0.818) landed close to CV macro F1 (0.815), which suggested reasonable generalisation without severe overfitting on this split.\nROC-AUC (0.930) indicated strong ranking ability; PR-AUC (0.836) reflected solid performance on the minority positive class relative to a random baseline.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Under the Hood & Final Thoughts</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-04-under-the-hood.html#final-evaluation---one-pass-on-the-test-set",
+    "href": "chapter-04-under-the-hood.html#final-evaluation---one-pass-on-the-test-set",
+    "title": "5  Under the Hood & Final Thoughts",
+    "section": "",
+    "text": "Table 5.1: Final LightGBM test-set metrics\n\n\n\n\n\nMetric\nTest value\n\n\n\n\nAccuracy\n0.874\n\n\nBalanced accuracy\n0.802\n\n\nPrecision (macro)\n0.839\n\n\nRecall (macro)\n0.802\n\n\nF1 (macro)\n0.818\n\n\nF1 (weighted)\n0.871\n\n\nROC-AUC\n0.930\n\n\nPR-AUC\n0.836\n\n\nBrier score\n0.087\n\n\n\n\n\n\n\n\n\n\n\n\n\nFigure 5.1: Confusion matrix on the test set (Figure 11)\n\n\n\n\n\n\n\n\n\nFigure 5.2: ROC curve (Figure 12a)\n\n\n\n\n\n\n\n\n\nFigure 5.3: Precision-recall curve (Figure 12b)",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Under the Hood & Final Thoughts</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-04-under-the-hood.html#interpretability---what-the-model-actually-used",
+    "href": "chapter-04-under-the-hood.html#interpretability---what-the-model-actually-used",
+    "title": "5  Under the Hood & Final Thoughts",
+    "section": "5.2 Interpretability - what the model actually used",
+    "text": "5.2 Interpretability - what the model actually used\n\n5.2.1 Permutation importance\nI shuffled each raw input column and measured the drop in macro F1. The largest decreases landed on marital-status, capital-gain, education-num, and age - exactly the kind of signals I expected after EDA.\n\n\n\n\n\n\nFigure 5.4: Permutation importance on test data (Figure 13)\n\n\n\n\n\n5.2.2 SHAP values\nThe SHAP summary plot now uses human-readable feature labels (for example education: Bachelors, marital-status: Married-civ-spouse) instead of opaque encoded indices. The global pattern was clear: education, marital status, occupation, and age-related splits dominated the tree model’s decisions.\n\n\n\n\n\n\nFigure 5.5: SHAP summary for LightGBM (Figure 14)\n\n\n\nWhat struck me was how concentrated the importance was - a handful of columns carried most of the signal, consistent with the education and occupation patterns I saw in EDA.\n\n\n5.2.3 Representative errors\nLooking at concrete mistakes helped more than aggregate scores:\n\nFalse positives (predicted &gt; $50K, actual &lt;= $50K) often involved married individuals in managerial or professional occupations with moderate hours - profiles that resemble high earners but fall below the threshold in the label.\nFalse negatives (predicted &lt;= $50K, actual &gt; $50K) included professionals with education and occupation signals the model underweighted relative to other constraints.\n\nErrors clustered at the decision boundary of a coarse income band. The model leans on occupation, education, and family-status proxies.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Under the Hood & Final Thoughts</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-04-under-the-hood.html#fairness---where-overall-metrics-were-not-the-whole-story",
+    "href": "chapter-04-under-the-hood.html#fairness---where-overall-metrics-were-not-the-whole-story",
+    "title": "5  Under the Hood & Final Thoughts",
+    "section": "5.3 Fairness - where overall metrics were not the whole story",
+    "text": "5.3 Fairness - where overall metrics were not the whole story\nWhen I broke test predictions out by sex, the recall gap was hard to ignore: I was missing high-earning women far more often than high-earning men.\n\n\n\nTable 5.2: Subgroup metrics by sex (test set)\n\n\n\n\n\nGroup\nFPR\nFNR\nPrecision\nRecall\nSupport\n\n\n\n\nFemale\n0.016\n0.454\n0.816\n0.546\n3,280\n\n\nMale\n0.086\n0.315\n0.774\n0.685\n6,483\n\n\n\n\n\n\nFemale records show lower recall (0.546 vs 0.685) and higher false negative rate (0.454 vs 0.315). Male records have higher false positive rate (0.086 vs 0.016). These are observational disparities in this dataset and model - they do not imply causation or deployment policy.\n\n\n\n\n\n\nFigure 5.6: Fairness metrics by sex (Figure 15a)\n\n\n\nBy race, the pattern repeated in a different shape:\n\n\n\nTable 5.3: Subgroup metrics by race (test set, selected groups)\n\n\n\n\n\nGroup\nFNR\nRecall\nSupport\n\n\n\n\nBlack\n0.504\n0.496\n907\n\n\nWhite\n0.330\n0.670\n8,369\n\n\n\n\n\n\nRecall for Black individuals (0.496) is lower than for White individuals (0.670), with higher FNR. Smaller groups (e.g. Amer-Indian-Eskimo, n=102) appear in the full table but need cautious interpretation due to sample size.\n\n\n\n\n\n\nFigure 5.7: Fairness metrics by race (Figure 15b)\n\n\n\n\n5.3.1 Intersectional groups\nSex-race intersections tell a finer-grained story. Disparities are visible across cells (e.g. Female|Black vs Male|White recall); cells with small support require extra caution. Full metrics: intersectional table.\nStrong overall F1 and unequal subgroup recall can coexist. Fairness auditing is separate from optimising a single score.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Under the Hood & Final Thoughts</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-04-under-the-hood.html#fairness-constraints-i-did-not-tune-and-why",
+    "href": "chapter-04-under-the-hood.html#fairness-constraints-i-did-not-tune-and-why",
+    "title": "5  Under the Hood & Final Thoughts",
+    "section": "5.4 Fairness constraints I did not tune (and why)",
+    "text": "5.4 Fairness constraints I did not tune (and why)\nStrong test macro F1 did not mean the model treated groups equally. I measured recall gaps, but I did not apply fairness constraints during training. That was deliberate: constraint methods (demographic parity, equalized odds, equal opportunity) need a validation set for threshold or model selection, and this project held out a single test set for one final evaluation.\nDemographic parity would ask for similar positive prediction rates across groups, but the dataset itself has very different base rates of high income by sex and race. Equalized odds would push false positive and false negative rates to align across groups - a reasonable production goal, but one that can trade off against overall accuracy. I documented these definitions and the tradeoffs in the fairness constraints essay.\nIn a deployment setting, I would add a validation fold, define tolerances with stakeholders, and monitor subgroup metrics over time rather than reporting a single aggregate F1 once.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Under the Hood & Final Thoughts</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-04-under-the-hood.html#what-would-it-take-to-use-this-in-2026",
+    "href": "chapter-04-under-the-hood.html#what-would-it-take-to-use-this-in-2026",
+    "title": "5  Under the Hood & Final Thoughts",
+    "section": "5.5 What would it take to use this in 2026?",
+    "text": "5.5 What would it take to use this in 2026?\nThe Adult dataset is not a snapshot of today’s labour market. It reflects 1994 census extraction patterns, a fixed $50K income band without inflation adjustment, and feature definitions from a different economic era. Remote work, gig employment, credential inflation, and shifting immigration patterns all mean the joint distribution of features and labels would differ materially if we collected similar data today.\nUsing this model for hiring, credit, or benefits screening in 2026 would require new representative data, inflation-adjusted or multi-band labels, modern feature schemas, subgroup monitoring in production, and legal review - not a redeploy of a 1994-era classifier with 0.818 macro F1. I wrote a longer essay on external validity and a revalidation protocol for anyone evaluating whether this benchmark generalizes beyond its historical context.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Under the Hood & Final Thoughts</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-04-under-the-hood.html#calibration---can-i-trust-the-probabilities",
+    "href": "chapter-04-under-the-hood.html#calibration---can-i-trust-the-probabilities",
+    "title": "5  Under the Hood & Final Thoughts",
+    "section": "5.6 Calibration - can I trust the probabilities?",
+    "text": "5.6 Calibration - can I trust the probabilities?\nThe Brier score is 0.087 (lower is better). The reliability curve compares mean predicted probability to observed positive rate across bins.\n\n\n\n\n\n\nFigure 5.8: Calibration curve (Figure 17)\n\n\n\nThe model is reasonably well calibrated in mid-to-high probability ranges; extreme bins deserve caution due to smaller bin counts. For ranking and threshold analysis, the probabilities seem usable - policy deployment would need more validation.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Under the Hood & Final Thoughts</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-04-under-the-hood.html#what-if-i-removed-sex-and-race",
+    "href": "chapter-04-under-the-hood.html#what-if-i-removed-sex-and-race",
+    "title": "5  Under the Hood & Final Thoughts",
+    "section": "5.7 What if I removed sex and race?",
+    "text": "5.7 What if I removed sex and race?\nI retrained a logistic regression model without sex and race on the same splits to see whether performance would collapse.\n\n\n\nTable 5.4: Extension: full LightGBM vs model without sex/race\n\n\n\n\n\nVariant\nAccuracy\nMacro F1\nROC-AUC\nBrier\n\n\n\n\nFull features (LightGBM, final)\n0.874\n0.818\n0.930\n0.087\n\n\nNo sex/race (logistic, extension)\n0.853\n0.783\n0.906\n0.102\n\n\n\n\n\n\nRemoving sensitive fields reduced accuracy by 2.2 percentage points and macro F1 by 3.5 points. Performance did not collapse - occupation, marital-status, education, and related fields likely act as proxies. This extension is diagnostic only; it does not establish fairness of deployment.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Under the Hood & Final Thoughts</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-04-under-the-hood.html#what-i-learned",
+    "href": "chapter-04-under-the-hood.html#what-i-learned",
+    "title": "5  Under the Hood & Final Thoughts",
+    "section": "5.8 What I learned",
+    "text": "5.8 What I learned\nSeveral methodological lessons stuck with me:\n\nLeakage control - Fitting preprocessing inside CV and holding out one test set avoided optimistic bias. Labelling “CV (train only)” vs “test” explicitly matters in every write-up.\nMetric choice - With ~24% positives, accuracy alone would mask poor minority-class performance; macro F1 and PR-AUC were more informative.\nModel family - Gradient boosting (especially LightGBM) outperformed linear, single-tree, and embedding MLP models on this tabular data.\nFairness vs accuracy - Strong overall metrics coexist with subgroup recall gaps; fairness auditing is a separate step from tuning one number.\nTraceability - Linking claims to artifacts made the project auditable and easier to revise into this developer log.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Under the Hood & Final Thoughts</span>"
+    ]
+  },
+  {
+    "objectID": "chapter-04-under-the-hood.html#conclusion",
+    "href": "chapter-04-under-the-hood.html#conclusion",
+    "title": "5  Under the Hood & Final Thoughts",
+    "section": "5.9 Conclusion",
+    "text": "5.9 Conclusion\nIncome above $50K can be predicted with substantial accuracy from census attributes in the Adult dataset: the selected LightGBM model achieves test macro F1 of 0.818 and ROC-AUC of 0.930, using a leakage-safe pipeline and CV-based model selection.\nModel family matters - boosting ensembles clearly outperform logistic regression and a PyTorch embedding MLP. Interpretability tools confirm reliance on education, occupation, and demographic proxies. Fairness diagnostics reveal unequal recall and error rates across sex and race subgroups. Calibration is reasonable (Brier 0.087), and removing sex/race reduces performance while proxy features remain informative.\nI would answer the main research question in the affirmative for predictive strength within this dataset - with important caveats on subgroup reliability, historical data limits, and non-causal fairness metrics. Future work could include threshold tuning for equalised odds, richer fairness constraints, calibration refitting, and external validation on contemporary survey data.\n\n\n\n\n\n\nLimitations I am carrying forward\n\n\n\n\nHistorical data: UCI Adult reflects a specific U.S. survey era; patterns may not transfer today.\nCoarse labels: Binary income bands hide within-class heterogeneity.\nFairness metrics: Subgroup FPR/FNR/recall describe this model on this test split - not causal fairness guarantees.\nInterpretability: SHAP and permutation importance operate on encoded features.\nNeural models: The PyTorch embedding MLP was not fully optimised; underperformance is not a definitive ceiling for neural tabular methods.\n\n\n\nThe original academic report and PDF remain unchanged alongside this narrative rewrite.",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Under the Hood & Final Thoughts</span>"
+    ]
+  },
+  {
+    "objectID": "references.html",
+    "href": "references.html",
+    "title": "6  References",
+    "section": "",
+    "text": "References",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>References</span>"
+    ]
+  },
+  {
+    "objectID": "references.html#additional-sources-cited-in-the-original-report",
+    "href": "references.html#additional-sources-cited-in-the-original-report",
+    "title": "6  References",
+    "section": "6.1 Additional sources cited in the original report",
+    "text": "6.1 Additional sources cited in the original report\n\nKohavi, R. (1996). Adult Data Set. UCI Machine Learning Repository. https://archive.ics.uci.edu/ml/datasets/adult\nDua, D., & Graff, C. (2019). UCI Machine Learning Repository. University of California, Irvine.\nPedregosa, F., et al. (2011). Scikit-learn: Machine Learning in Python. JMLR 12, 2825-2830.\nKe, G., et al. (2017). LightGBM: A Highly Efficient Gradient Boosting Decision Tree. NeurIPS.\nLundberg, S. M., & Lee, S.-I. (2017). A Unified Approach to Interpreting Model Predictions. NeurIPS (SHAP).\n\nFull BibTeX entries: reports/references.bib.",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>References</span>"
+    ]
+  }
+]
