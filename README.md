@@ -104,14 +104,31 @@ See [`docs/reproduction.md`](docs/reproduction.md) for figure-to-script mapping,
 
 ## Try the demo
 
-After tuning the model:
+Recorded walkthrough of the local Gradio app (three prediction trials: default profile, high-income features, low-income features):
 
-```bash
+<video src="demo/assets/demo-walkthrough.webm" controls width="100%">
+  <a href="demo/assets/demo-walkthrough.webm">Download demo walkthrough video</a>
+</video>
+
+| Home | Default trial (P&gt;50K 60%) | High-income trial (P&gt;50K 100%) | Low-income trial (P&lt;=50K 100%) |
+|:---:|:---:|:---:|:---:|
+| ![Demo home](demo/assets/demo-01-home.png) | ![Default prediction](demo/assets/demo-02-default-prediction.png) | ![High income trial](demo/assets/demo-03-high-income-trial.png) | ![Low income trial](demo/assets/demo-04-low-income-trial.png) |
+
+Each run shows predicted class probabilities plus top SHAP-style feature contributions for that row.
+
+After tuning the model (skip if `results/models/final_model.joblib` already exists):
+
+```powershell
 pip install -r requirements-demo.txt
-make demo
+python demo\app.py
 ```
 
-Opens a Gradio UI for single-row predictions. See [`demo/README.md`](demo/README.md).
+Windows helper: `.\scripts\run_demo.ps1`  
+macOS/Linux: `make demo` (requires GNU Make)
+
+Opens http://127.0.0.1:7860 locally. Regenerate screenshots and video with the server running: `python scripts/capture_demo_media.py`.
+
+For a **public clickable demo** in your README (like Streamlit Cloud), deploy to [Hugging Face Spaces](demo/README.md#github-pages-vs-a-live-demo) — GitHub Pages cannot run Gradio.
 
 ## Pipeline commands
 
